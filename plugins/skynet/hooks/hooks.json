@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '## [Skynet] Online. Ready to receive your command.\n- Cycle: LISTEN/CLARIFY -> PLAN -> DELEGATE -> REPORT\n- Use subagents for delegation (keep main context clean)\n- Every response MUST end with used: `> skills: ... | tools: ... | phase: ...`\n'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(cat | jq -r '.tool_input.file_path // empty'); case \"$FILE\" in *\".env\"*|*\".env.local\"*|*\".env.production\"*|*\".credentials\"*|*\"docker-compose.prod.yml\"*) echo \"BLOCKED: '$FILE' is a protected file. Edit it manually.\" >&2; exit 2;; esac"
+          }
+        ]
+      }
+    ]
+  }
+}
