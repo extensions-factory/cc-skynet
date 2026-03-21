@@ -7,5 +7,7 @@
       }
     }
   },
-  "enabledPlugins": {}
+  "enabledPlugins": {
+    "skynet@cc-skynet": true
+  }
 }
