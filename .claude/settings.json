@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "cc-skynet": {
+      "source": {
+        "source": "directory",
+        "path": "."
+      }
+    }
+  },
+  "enabledPlugins": {
+    "skynet@cc-skynet": true
+  }
+}
