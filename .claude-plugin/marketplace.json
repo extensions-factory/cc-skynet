@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "cc-skynet",
+  "version": "0.1.0",
+  "description": "AI orchestrator that coordinates work between user and multiple AI workers.",
+  "owner": {
+    "name": "extensions-factory",
+    "email": "git@risotech.vn"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": []
+}
