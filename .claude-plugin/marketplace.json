@@ -15,7 +15,7 @@
       "name": "skynet",
       "source": "./plugins/skynet",
       "description": "AI orchestrator that coordinates work between user and multiple AI workers",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "author": {
         "name": "extensions-factory"
       },

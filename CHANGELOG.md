@@ -6,6 +6,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-03-22
+
+### Added
+
+- `scripts/skills-fetch.sh`: clone/pull `antigravity-awesome-skills` repo to `~/.claude/skills-cache/`, list available categories from `skills_index.json`
+- `scripts/skills-link.sh`: symlink skills matching project categories (from `.claude/skynet.json`) to `.claude/skills/` using `skills_index.json` — no separate map file needed
+- `scripts/setup-cron.sh`: idempotent cron registration — adds daily `skills-fetch` cron at 00:00 if not already present
+- SessionStart hooks: `setup-cron.sh` (cron check) + `skills-link.sh` (auto-link on session start)
+
+### Changed
+
+- Orchestrator gains **Phase 1: Analyze & Resolve Skills** — reads `skills_index.json`, identifies needed categories, links missing skills, then uses/suggests them in task briefs
+- `skills-fetch.sh` and `skills-link.sh` use `skills_index.json` directly instead of a separate map file
+- All scripts share a single log file at `~/.claude/logs/skynet-skills.log`
+- Removed `skynet-skills` skill — skill management is now handled by the orchestrator
+
 ## [0.3.0] - 2026-03-22
 
 ### Added
