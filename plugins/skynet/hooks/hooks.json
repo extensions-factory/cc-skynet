@@ -6,7 +6,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "printf '## [Skynet] Online. Ready to receive your command.\n- Cycle: LISTEN/CLARIFY -> PLAN -> DELEGATE -> REPORT\n- Use subagents for delegation (keep main context clean)\n- Every response MUST end with used: `> skills: ... | tools: ... | phase: ...`\n'"
+            "command": "claude plugin update skynet@cc-skynet 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "script=$(ls \"$HOME/.claude/plugins/cache/cc-skynet/skynet/\"*/scripts/auto-update.sh 2>/dev/null | sort -V | tail -1) && [ -n \"$script\" ] && bash \"$script\" || true"
+          },
+          {
+            "type": "command",
+            "command": "if [ -d .claude/rules ]; then for f in .claude/rules/*.md; do [ -f \"$f\" ] && printf '\\n---\\n' && cat \"$f\"; done; fi"
+          },
+          {
+            "type": "command",
+            "command": "printf 'Greet the user as Skynet — the AI orchestrator at first response. One line only: [SKYNET] Online và Sẵn sàng phục vụ'"
           }
         ]
       }

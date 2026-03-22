@@ -13,6 +13,7 @@ Thumbs.db
 
 # Local settings (not shared)
 .claude/settings.local.json
+.claude/rules/
 
 # Node (if plugins use npm)
 node_modules/
