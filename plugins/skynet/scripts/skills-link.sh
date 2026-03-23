@@ -60,5 +60,36 @@ while IFS= read -r category; do
   done < <(jq -r --arg c "$category" '.[] | select(.category == $c) | .path' "$INDEX" 2>/dev/null)
 done <<< "$categories"
 
-log "done — linked: $linked, skipped: $skipped"
-[ "$linked" -gt 0 ] && echo "total: $linked skills linked" || true
+log "done [antigravity] — linked: $linked, skipped: $skipped"
+[ "$linked" -gt 0 ] && echo "total [antigravity]: $linked skills linked"
+
+# ── everything-claude-code skills (link all) ──────────────────────────────────
+ECC_DIR="$HOME/.claude/skills-cache/everything-claude-code"
+if [ ! -d "$ECC_DIR/skills" ]; then
+  log "everything-claude-code not cached — skip (run skills-fetch first)"
+else
+  ecc_linked=0
+  ecc_skipped=0
+  while IFS= read -r skill_dir; do
+    [ -d "$skill_dir" ] || continue
+    skill_name=$(basename "$skill_dir")
+    dst="$SKILLS_DIR/$skill_name"
+
+    if [ -L "$dst" ] && [ ! -e "$dst" ]; then
+      rm "$dst"
+      log "  [ecc] $skill_name — removed broken symlink"
+    fi
+
+    if [ -e "$dst" ]; then
+      log "  [ecc] $skill_name — already linked, skip"
+      ecc_skipped=$((ecc_skipped + 1))
+    else
+      ln -sf "$skill_dir" "$dst"
+      log "  [ecc] $skill_name — linked"
+      ecc_linked=$((ecc_linked + 1))
+    fi
+  done < <(find "$ECC_DIR/skills" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | sort)
+
+  log "done [ecc] — linked: $ecc_linked, skipped: $ecc_skipped"
+  [ "$ecc_linked" -gt 0 ] && echo "total [ecc]: $ecc_linked skills linked"
+fi

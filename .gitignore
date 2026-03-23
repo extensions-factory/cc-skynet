@@ -14,6 +14,7 @@ Thumbs.db
 *.bak
 
 # Local settings (not shared)
+.claude/agents/
 .claude/settings.local.json
 .claude/rules/
 .claude/skills/
