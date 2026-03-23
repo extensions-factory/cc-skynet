@@ -23,5 +23,8 @@ Thumbs.db
 # Node (if plugins use npm)
 node_modules/
 
+# Runtime task files
+tasks/
+
 # Credentials
 accounts/

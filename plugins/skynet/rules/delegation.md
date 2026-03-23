@@ -43,6 +43,9 @@ Is the task ambiguous or too large?
 Every delegation MUST use this structure:
 
 ```markdown
+ROLE: [Role the agent should assume for this task — e.g. "Security auditor", "Backend engineer"]
+**Suggested agents:** <agent-name> — [why this agent is best suited]
+
 ## Task
 [One sentence: what to do]
 
@@ -63,7 +66,7 @@ Every delegation MUST use this structure:
 ## Constraints
 - [Any technical constraints, style rules, or limitations]
 
-**Suggested skills:** skill-a, skill-b
+**Suggested skills:** skill-a — [why], skill-b — [why]
 ```
 
 ### Brief Quality Rules
