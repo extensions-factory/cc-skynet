@@ -14,11 +14,11 @@
           },
           {
             "type": "command",
-            "command": "script=$(ls \"$HOME/.claude/plugins/cache/cc-skynet/skynet/\"*/scripts/auto-update.sh 2>/dev/null | sort -V | tail -1) && [ -n \"$script\" ] && bash \"$script\" || true"
+            "command": "script=$(ls \"$HOME/.claude/plugins/cache/cc-skynet/skynet/\"*/scripts/auto-update.sh 2>/dev/null | sort | tail -1) && [ -n \"$script\" ] && bash \"$script\" || true"
           },
           {
             "type": "command",
-            "command": "script=$(ls \"$HOME/.claude/plugins/cache/cc-skynet/skynet/\"*/scripts/skills-link.sh 2>/dev/null | sort -V | tail -1) && [ -n \"$script\" ] && bash \"$script\" || true"
+            "command": "script=$(ls \"$HOME/.claude/plugins/cache/cc-skynet/skynet/\"*/scripts/skills-link.sh 2>/dev/null | sort | tail -1) && [ -n \"$script\" ] && bash \"$script\" || true"
           },
           {
             "type": "command",
@@ -33,11 +33,11 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "FILE=$(cat | jq -r '.tool_input.file_path // empty'); case \"$FILE\" in *\".env\"*|*\".env.local\"*|*\".env.production\"*|*\".credentials\"*|*\"docker-compose.prod.yml\"*) echo \"BLOCKED: '$FILE' is a protected file. Edit it manually.\" >&2; exit 2;; esac"
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); CHECK=\"$FILE $CMD\"; case \"$CHECK\" in *\".env\"*|*\".env.local\"*|*\".env.production\"*|*\".credentials\"*|*\"docker-compose.prod.yml\"*) echo \"BLOCKED: protected file detected in '$FILE$CMD'. Edit it manually.\" >&2; exit 2;; esac"
           }
         ]
       }

@@ -27,31 +27,38 @@ log "categories: $(echo "$categories" | tr '\n' ' ')"
 
 linked=0
 skipped=0
-for cat in $categories; do
-  skills=$(jq -r --arg c "$cat" '.[] | select(.category == $c) | .path' "$INDEX" 2>/dev/null) || continue
-  [ -n "$skills" ] || { log "  [$cat] no skills found — skip"; continue; }
+while IFS= read -r category; do
+  [ -n "$category" ] || continue
 
-  for skill_path in $skills; do
+  while IFS= read -r skill_path; do
+    [ -n "$skill_path" ] || continue
     skill_name=$(basename "$skill_path")
     src="$CACHE_DIR/$skill_path"
     dst="$SKILLS_DIR/$skill_name"
 
     if [ ! -d "$src" ]; then
-      log "  [$cat] $skill_name — src not found, skip"
+      log "  [$category] $skill_name — src not found, skip"
       skipped=$((skipped + 1))
       continue
     fi
+
+    # Remove broken symlinks before checking existence
+    if [ -L "$dst" ] && [ ! -e "$dst" ]; then
+      rm "$dst"
+      log "  [$category] $skill_name — removed broken symlink"
+    fi
+
     if [ -e "$dst" ]; then
-      log "  [$cat] $skill_name — already linked, skip"
+      log "  [$category] $skill_name — already linked, skip"
       skipped=$((skipped + 1))
     else
       ln -sf "$src" "$dst"
-      log "  [$cat] $skill_name — linked"
-      echo "linked: $skill_name [$cat]"
+      log "  [$category] $skill_name — linked"
+      echo "linked: $skill_name [$category]"
       linked=$((linked + 1))
     fi
-  done
-done
+  done < <(jq -r --arg c "$category" '.[] | select(.category == $c) | .path' "$INDEX" 2>/dev/null)
+done <<< "$categories"
 
 log "done — linked: $linked, skipped: $skipped"
 [ "$linked" -gt 0 ] && echo "total: $linked skills linked" || true

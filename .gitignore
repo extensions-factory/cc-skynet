@@ -10,6 +10,8 @@ Thumbs.db
 
 # Temp
 .tmp/
+*.bak.*
+*.bak
 
 # Local settings (not shared)
 .claude/settings.local.json

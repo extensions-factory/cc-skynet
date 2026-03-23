@@ -51,7 +51,7 @@ Before planning, resolve which skills are needed:
 3. Check `.claude/skills/` to see what is already linked.
 4. For missing categories: update `.claude/skynet.json` (merge, no duplicates), then run:
    ```
-   bash ~/.claude/plugins/cache/cc-skynet/skynet/$(ls ~/.claude/plugins/cache/cc-skynet/skynet/ | tail -1)/scripts/skills-link.sh
+   bash ~/.claude/plugins/cache/cc-skynet/skynet/$(ls ~/.claude/plugins/cache/cc-skynet/skynet/ | sort | tail -1)/scripts/skills-link.sh
    ```
 5. Note the active skills — use them yourself and suggest relevant ones in task briefs.
 

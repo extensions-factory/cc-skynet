@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Register daily skills-fetch cron job if not already present
+set -euo pipefail
+
 LOG="$HOME/.claude/logs/skynet-skills.log"
 
 mkdir -p "$(dirname "$LOG")"
