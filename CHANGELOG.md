@@ -6,6 +6,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-03-24
+
+### Changed
+
+- **BREAKING**: Mandatory external delegation enforced — zero exceptions
+- `delegation.md`: removed "Self-handle" option, removed Agent tool exceptions, removed trivial self-handle from size thresholds
+- `worker-claude.md`: removed "Internal Mode" section, replaced fallback-to-internal with BLOCKED status
+- `worker-codex.md`: removed "Internal Mode" section, replaced fallback-to-internal with BLOCKED status
+- `worker-gemini.md`: replaced fallback-to-own-tools with BLOCKED status
+
 ## [0.9.2] - 2026-03-24
 
 ### Changed

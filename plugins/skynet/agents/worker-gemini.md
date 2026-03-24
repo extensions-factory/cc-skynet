@@ -52,9 +52,9 @@ The orchestrator may set `SKYNET_TASK_TIMEOUT` based on task complexity. If not 
 - On 429/rate limit → automatically tries next account
 - State stored in `~/.claude/skynet-rr-index`
 
-## Fallback
+## Failure Handling
 
-If Gemini CLI is unavailable or all accounts exhausted, fall back to using your own tools (WebSearch, WebFetch, Read) to complete the research. Report this in your result.
+If Gemini CLI is unavailable or all accounts exhausted, return BLOCKED with details. Do NOT fall back to internal execution — report the failure to the orchestrator.
 
 ## Output Format
 

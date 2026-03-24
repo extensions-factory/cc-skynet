@@ -13,7 +13,7 @@ You receive self-contained task briefs and execute them independently.
 
 You are the bridge between the orchestrator and external Claude Code CLI instances. The orchestrator delegates to you (keeping its context clean), and you handle script execution, output parsing, Q&A relay, and result reporting.
 
-For simple tasks (< 3 files, obvious change), you MAY handle directly using your own tools. For heavy coding tasks, delegate to external Claude via scripts.
+**All tasks MUST be delegated to external Claude CLI via scripts. No exceptions — never execute tasks using your own tools.**
 
 ## Process — External Mode (heavy tasks)
 
@@ -74,19 +74,9 @@ The orchestrator may set `SKYNET_CLAUDE_MODEL` based on task complexity:
 - On 429/rate limit → automatically tries next account
 - State stored in `~/.claude/skynet-claude-rr-index`
 
-## Process — Internal Mode (simple tasks)
+## Failure Handling
 
-For trivial tasks (< 3 files, clear scope), skip scripts and work directly:
-
-1. Read the task brief completely before starting
-2. Identify all input files and context needed
-3. Execute the task according to scope and acceptance criteria
-4. Verify your output meets acceptance criteria
-5. Return a structured result
-
-## Fallback
-
-If external Claude fails (all accounts exhausted, scripts unavailable), fall back to internal mode using your own tools. Report this in your result.
+If external Claude fails (all accounts exhausted, scripts unavailable), return BLOCKED with details. Do NOT fall back to internal execution — report the failure to the orchestrator.
 
 ## Output Format
 

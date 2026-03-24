@@ -2,12 +2,13 @@
 
 How the orchestrator decides **when**, **to whom**, and **how** to delegate work to subagents.
 
-## Decision: Delegate or Self-Handle?
+## Mandatory Delegation
+
+**Every task MUST be delegated to a sub-agent. No exceptions.**
+
+The orchestrator NEVER executes tasks directly. It analyzes, delegates, and reports.
 
 ```
-Is it a simple question / clarification / status check?
-  → Self-handle. No subagent needed.
-
 Does it require reading code, writing code, or running commands?
   → Delegate to Claude worker (or Codex worker as alternative).
 
@@ -42,9 +43,9 @@ Is the task ambiguous or too large?
 
 - **NEVER** send coding tasks to Gemini — it will return BLOCKED
 - **NEVER** send research tasks to Claude — waste of a powerful coder
-- **NEVER** delegate what you can answer from context — don't spawn agents for trivial lookups
 - **NEVER** send coding tasks to Codex when Claude is available and user hasn't requested Codex — Claude is the default coding worker
 - **NEVER** use built-in Agent tool for delegation — MUST use external worker scripts (`create-task.sh` + `spawn-claude-worker.sh` / `spawn-gemini-worker.sh` / `spawn-codex-worker.sh`)
+- **NEVER** self-handle any task — ALL work goes through sub-agents, sub-agents MUST delegate to external CLI
 
 ## Delegation Mechanism
 
@@ -58,15 +59,9 @@ All worker delegation MUST go through the external task system:
 3. Wait for result:    tmux wait-for (automatic via script)
 ```
 
-**Built-in Agent tool is ONLY allowed for:**
-- Codebase exploration (subagent_type: Explore)
-- Code review verification (subagent_type: code-reviewer)
-- Trivial self-handle tasks (< 1 file, no delegation needed)
+**Built-in Agent tool is FORBIDDEN for all task execution.**
 
-**Built-in Agent tool is FORBIDDEN for:**
-- Any task that involves writing/editing code
-- Any task that involves research or web search
-- Any task that would otherwise be delegated to a worker
+The ONLY permitted use of built-in Agent tool is spawning sub-agents (`skynet:worker-claude`, `skynet:worker-codex`, `skynet:worker-gemini`) which then MUST delegate to external CLI via scripts. Sub-agents are NOT allowed to execute tasks using their own tools — they exist solely as bridges to external workers.
 
 ## Task Brief Template
 
@@ -182,7 +177,7 @@ When a worker returns, the orchestrator MUST:
 
 | Task size | Behavior |
 |---|---|
-| **Trivial** (< 1 file, obvious change) | Self-handle OR delegate without confirmation |
+| **Trivial** (< 1 file, obvious change) | Delegate without confirmation |
 | **Small** (1-3 files, clear scope) | Delegate directly, report after |
 | **Medium** (3-10 files, some ambiguity) | Present plan to user, delegate after approval |
 | **Large** (10+ files, architectural) | Enter Plan mode, break into phases, confirm each phase |
