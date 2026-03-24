@@ -19,6 +19,7 @@ Thumbs.db
 .claude/rules/
 .claude/skills/
 .claude/skynet.json
+.gemini/
 
 # Node (if plugins use npm)
 node_modules/

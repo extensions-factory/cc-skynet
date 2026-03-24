@@ -14,6 +14,20 @@ log() { echo "[$(date '+%H:%M:%S')] [skills-link] $*" >> "$LOG"; }
 
 log "start — cwd: $(pwd)"
 
+# ── Gemini skills mirror ─────────────────────────────────────────────────────
+# Symlink .gemini/skills → .claude/skills so Gemini CLI sees the same skills
+GEMINI_SKILLS=".gemini/skills"
+mkdir -p "$(dirname "$GEMINI_SKILLS")"
+if [ -L "$GEMINI_SKILLS" ] && [ ! -e "$GEMINI_SKILLS" ]; then
+  rm "$GEMINI_SKILLS"
+  log "removed broken .gemini/skills symlink"
+fi
+if [ ! -e "$GEMINI_SKILLS" ]; then
+  ln -sf "../$SKILLS_DIR" "$GEMINI_SKILLS"
+  log "linked .gemini/skills → $SKILLS_DIR"
+  echo "linked: .gemini/skills → $SKILLS_DIR"
+fi
+
 [ -f "$PROJECT_CONFIG" ] || { log "no $PROJECT_CONFIG — skip"; exit 0; }
 [ -d "$CACHE_DIR" ]      || { log "cache not found — skip"; echo "skills cache not found — run /skynet-skills fetch first" >&2; exit 0; }
 [ -f "$INDEX" ]          || { log "index not found — skip"; echo "skills_index.json missing — re-run /skynet-skills fetch" >&2; exit 0; }
@@ -61,7 +75,7 @@ while IFS= read -r category; do
 done <<< "$categories"
 
 log "done [antigravity] — linked: $linked, skipped: $skipped"
-[ "$linked" -gt 0 ] && echo "total [antigravity]: $linked skills linked"
+[ "$linked" -gt 0 ] && echo "total [antigravity]: $linked skills linked" || true
 
 # ── everything-claude-code skills (link all) ──────────────────────────────────
 ECC_DIR="$HOME/.claude/skills-cache/everything-claude-code"
@@ -91,5 +105,5 @@ else
   done < <(find "$ECC_DIR/skills" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | sort)
 
   log "done [ecc] — linked: $ecc_linked, skipped: $ecc_skipped"
-  [ "$ecc_linked" -gt 0 ] && echo "total [ecc]: $ecc_linked skills linked"
+  [ "$ecc_linked" -gt 0 ] && echo "total [ecc]: $ecc_linked skills linked" || true
 fi
