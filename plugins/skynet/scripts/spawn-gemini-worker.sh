@@ -95,8 +95,7 @@ set -e
 cd $(printf '%q' "$PROJECT_DIR")
 export GOOGLE_APPLICATION_CREDENTIALS=$(printf '%q' "$CREDS")
 export GOOGLE_GENAI_USE_GCA=true
-CONTENT=\$(cat $(printf '%q' "$TASK_FILE"))
-gemini -p "\$CONTENT" > $(printf '%q' "$OUTPUT_FILE") 2> $(printf '%q' "$ERR_FILE")
+cat $(printf '%q' "$TASK_FILE") | gemini -p - > $(printf '%q' "$OUTPUT_FILE") 2> $(printf '%q' "$ERR_FILE")
 EC=\$?
 # Atomic write: tmp → mv (no partial reads)
 echo "\$EC" > $(printf '%q' "${EXIT_FILE}.tmp") && mv $(printf '%q' "${EXIT_FILE}.tmp") $(printf '%q' "$EXIT_FILE")

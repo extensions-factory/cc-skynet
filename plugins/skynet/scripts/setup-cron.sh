@@ -14,7 +14,7 @@ if crontab -l 2>/dev/null | grep -qF "$MARKER"; then
   exit 0
 fi
 
-CRON_CMD="0 0 * * * bash -c 'f=\$(ls \$HOME/.claude/plugins/cache/cc-skynet/skynet/*/scripts/skills-fetch.sh 2>/dev/null | tail -1) && [ -n \"\$f\" ] && bash \"\$f\"' >> $LOG 2>&1 # $MARKER"
+CRON_CMD="0 0 * * * bash -c 'f=\$(ls \$HOME/.claude/plugins/cache/cc-skynet/skynet/*/scripts/skills-fetch.sh 2>/dev/null | sort | tail -1) && [ -n \"\$f\" ] && bash \"\$f\"' >> $LOG 2>&1 # $MARKER"
 
 (crontab -l 2>/dev/null; echo "$CRON_CMD") | crontab -
 

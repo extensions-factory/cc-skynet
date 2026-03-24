@@ -252,6 +252,7 @@ STATE_EOF
 
   # ── Write wrapper script ───────────────────────────────────────────────────
   WRAPPER="$PIPE_DIR/${TASK_ID}-wrapper.sh"
+  trap 'rm -f "$WRAPPER"' EXIT
   cat > "$WRAPPER" <<WRAPPER_EOF
 #!/usr/bin/env bash
 set -e
@@ -297,7 +298,7 @@ while [ \$ROUND -lt \$MAX_ROUNDS ]; do
       --session-id "\$UUID" \
       --dangerously-skip-permissions \
       --model "\$MODEL" \
-      > "\$OUT" 2> "\$ERR" || true
+      > "\$OUT" 2> "\$ERR" && EC=0 || EC=\$?
   else
     A=\$(cat "\$ANSWERF" 2>/dev/null || echo "Please continue.")
     rm -f "\$ANSWERF"
@@ -305,10 +306,8 @@ while [ \$ROUND -lt \$MAX_ROUNDS ]; do
       --output-format json \
       --dangerously-skip-permissions \
       --model "\$MODEL" \
-      > "\$OUT" 2> "\$ERR" || true
+      > "\$OUT" 2> "\$ERR" && EC=0 || EC=\$?
   fi
-
-  EC=\$?
 
   # Detect NEEDS_CLARIFICATION — tight match: **Status** immediately followed by it
   # Avoids false positives when output mentions NEEDS_CLARIFICATION in other context
@@ -362,6 +361,7 @@ WRAPPER_EOF
   elapsed=$(( END_TIME - START_TIME ))
   STATUS=$(cat "$STATUS_FILE" 2>/dev/null || echo "UNKNOWN")
   rm -f "$WRAPPER"
+  trap - EXIT
 
   # ── Handle QUESTION ────────────────────────────────────────────────────────
   if [ "$STATUS" = "QUESTION" ]; then

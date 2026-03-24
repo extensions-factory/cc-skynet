@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); CHECK=\"$FILE $CMD\"; case \"$CHECK\" in *\".env\"*|*\".env.local\"*|*\".env.production\"*|*\".credentials\"*|*\"docker-compose.prod.yml\"*) echo \"BLOCKED: protected file detected in '$FILE$CMD'. Edit it manually.\" >&2; exit 2;; esac"
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); CHECK=\"$FILE $CMD\"; case \"$CHECK\" in *\"/.env\"*|*\"/.env.\"*|*\".credentials\"*|*\"docker-compose.prod.yml\"*) echo \"BLOCKED: protected file detected in '$FILE$CMD'. Edit it manually.\" >&2; exit 2;; esac"
           }
         ]
       }

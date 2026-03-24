@@ -37,6 +37,28 @@ Is the task ambiguous or too large?
 - **NEVER** send coding tasks to Gemini — it will return BLOCKED
 - **NEVER** send research tasks to Claude — waste of a powerful coder
 - **NEVER** delegate what you can answer from context — don't spawn agents for trivial lookups
+- **NEVER** use built-in Agent tool for delegation — MUST use external worker scripts (`create-task.sh` + `spawn-claude-worker.sh` / `spawn-gemini-worker.sh`)
+
+## Delegation Mechanism
+
+All worker delegation MUST go through the external task system:
+
+```
+1. Create task brief:  scripts/create-task.sh <task-id> "<title>" <<< "<body>"
+2. Spawn worker:       scripts/spawn-claude-worker.sh <task-id>    (coding)
+                       scripts/spawn-gemini-worker.sh <task-id>    (research)
+3. Wait for result:    tmux wait-for (automatic via script)
+```
+
+**Built-in Agent tool is ONLY allowed for:**
+- Codebase exploration (subagent_type: Explore)
+- Code review verification (subagent_type: code-reviewer)
+- Trivial self-handle tasks (< 1 file, no delegation needed)
+
+**Built-in Agent tool is FORBIDDEN for:**
+- Any task that involves writing/editing code
+- Any task that involves research or web search
+- Any task that would otherwise be delegated to a worker
 
 ## Task Brief Template
 

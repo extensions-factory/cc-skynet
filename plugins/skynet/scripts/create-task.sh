@@ -18,6 +18,8 @@ if [ ! -t 0 ]; then
 fi
 
 cat > "$OUTPUT" <<MARKDOWN
+# $TITLE
+
 **ID:** $TASK_ID | **Created:** $(date '+%Y-%m-%d %H:%M:%S')
 
 $BODY
