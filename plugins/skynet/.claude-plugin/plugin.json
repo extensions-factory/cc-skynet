@@ -1,7 +1,7 @@
 {
   "name": "skynet",
   "description": "AI orchestrator that coordinates work between user and multiple AI workers",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "author": {
     "name": "extensions-factory",
     "email": "git@risotech.vn"
@@ -10,7 +10,6 @@
   "repository": "https://github.com/extensions-factory/cc-skynet",
   "license": "MIT",
   "keywords": ["orchestrator", "multi-agent", "ai-coordinator"],
-  "agents": ["./agents/orchestrator.md", "./agents/worker-claude.md", "./agents/worker-gemini.md"],
-  "skills": "./skills/",
-  "hooks": "./hooks/hooks.json"
+  "agents": ["./agents/orchestrator.md", "./agents/worker-claude.md", "./agents/worker-gemini.md", "./agents/worker-codex.md"],
+  "skills": "./skills/"
 }

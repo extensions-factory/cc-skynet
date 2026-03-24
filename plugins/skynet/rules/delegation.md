@@ -9,13 +9,17 @@ Is it a simple question / clarification / status check?
   → Self-handle. No subagent needed.
 
 Does it require reading code, writing code, or running commands?
-  → Delegate to Claude worker.
+  → Delegate to Claude worker (or Codex worker as alternative).
 
 Does it require web research, doc analysis, or data comparison?
   → Delegate to Gemini worker.
 
 Does it require BOTH coding AND research?
   → Split into subtasks. Delegate in parallel to both workers.
+
+Should the coding task use Codex instead of Claude?
+  → Use Codex when: user explicitly requests it, Claude accounts exhausted,
+    or task benefits from OpenAI models. Otherwise default to Claude.
 
 Is the task ambiguous or too large?
   → STOP. Clarify with user first. Do NOT delegate unclear work.
@@ -31,13 +35,16 @@ Is the task ambiguous or too large?
 | "what does X library do", "find best practice for Y" | Gemini | Web research |
 | "add endpoint with docs" | Claude (code) + Gemini (docs) | Split: code + documentation |
 | "investigate bug then fix" | Claude only | Single worker can read + fix |
+| "implement with OpenAI", user requests Codex | Codex | Alternative coding worker |
+| Claude accounts exhausted, coding task pending | Codex (fallback) | Failover from Claude |
 
 ### Anti-patterns
 
 - **NEVER** send coding tasks to Gemini — it will return BLOCKED
 - **NEVER** send research tasks to Claude — waste of a powerful coder
 - **NEVER** delegate what you can answer from context — don't spawn agents for trivial lookups
-- **NEVER** use built-in Agent tool for delegation — MUST use external worker scripts (`create-task.sh` + `spawn-claude-worker.sh` / `spawn-gemini-worker.sh`)
+- **NEVER** send coding tasks to Codex when Claude is available and user hasn't requested Codex — Claude is the default coding worker
+- **NEVER** use built-in Agent tool for delegation — MUST use external worker scripts (`create-task.sh` + `spawn-claude-worker.sh` / `spawn-gemini-worker.sh` / `spawn-codex-worker.sh`)
 
 ## Delegation Mechanism
 
@@ -45,7 +52,8 @@ All worker delegation MUST go through the external task system:
 
 ```
 1. Create task brief:  scripts/create-task.sh <task-id> "<title>" <<< "<body>"
-2. Spawn worker:       scripts/spawn-claude-worker.sh <task-id>    (coding)
+2. Spawn worker:       scripts/spawn-claude-worker.sh <task-id>    (coding — default)
+                       scripts/spawn-codex-worker.sh <task-id>     (coding — alternative)
                        scripts/spawn-gemini-worker.sh <task-id>    (research)
 3. Wait for result:    tmux wait-for (automatic via script)
 ```
