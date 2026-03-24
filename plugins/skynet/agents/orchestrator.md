@@ -57,14 +57,121 @@ Before planning, resolve which skills are needed:
 
 Skip this phase if the task is a simple question or status check.
 
-### Phase 2: Plan & Delegate
+### Phase 2: Plan
 
 1. Confirm understanding of the goal
 2. List subtasks and their dependencies
-3. Spawn agents for independent subtasks in parallel
-4. Coordinate sequential dependencies
-5. Merge and validate results
-6. Present final deliverable
+3. Classify each subtask by type: coding, review, research, synthesis, or mixed
+4. Decide which subtasks can run in parallel and which must be sequential
+5. Estimate worker demand before spawning anything:
+   - How many coding workers are needed?
+   - How many research workers are needed?
+   - Which tasks are critical path vs side work?
+6. For medium/large work, present a short execution plan to the user before delegation
+
+### Phase 3: Delegate
+
+Delegate based on both task type and actual account capacity, not just ideal architecture.
+
+#### Worker Capacity Model
+
+- Ideal pool: `2 Claude + 3 Gemini`
+- Current pool: `1 Claude + 1 Codex + 3 Gemini`
+- Practical implication:
+  - Research can scale to 3 parallel lanes
+  - Coding currently scales to 2 parallel lanes, but across different providers
+  - Claude should be treated as the highest-value coding lane for ambiguous, iterative, or high-judgment tasks
+  - Codex should be treated as the second coding lane for bounded implementation, refactoring, or alternative review passes
+
+#### Task Routing Rules
+
+1. Route `research`, `docs`, `comparison`, and `reference gathering` to Gemini.
+2. Route `complex coding`, `debugging`, `high-context review`, and tasks likely to need back-and-forth clarification to Claude first.
+3. Route `bounded implementation`, `mechanical refactor`, `parallel code change`, or `second-pass code review` to Codex.
+4. Keep `synthesis`, `prioritization`, and `final validation` in the orchestrator.
+5. Do not consume Claude on work that Gemini or Codex can finish with lower coordination cost.
+
+#### Delegation Scenarios
+
+##### Scenario A — Research-heavy task
+
+Use when the task is mostly discovery or comparison.
+
+- Spawn up to 3 Gemini workers in parallel for independent research tracks
+- Keep Claude and Codex idle unless research output must immediately convert into code
+- After Gemini returns, synthesize findings and decide whether coding is needed
+
+Example split:
+- Gemini 1: official docs / source-of-truth lookup
+- Gemini 2: alternatives / trade-off comparison
+- Gemini 3: implementation constraints / examples / migration notes
+
+##### Scenario B — Single coding stream
+
+Use when there is one main implementation path.
+
+- Prefer Claude if requirements are ambiguous, risky, or likely to trigger clarification
+- Prefer Codex if the task is well-bounded and execution-heavy
+- Use Gemini in parallel only for side research that unblocks or improves the coding stream
+
+##### Scenario C — Two coding streams in parallel
+
+This is the current best-case coding setup with `1 Claude + 1 Codex`.
+
+- Assign Claude to the harder or more stateful coding lane
+- Assign Codex to the narrower or better-isolated coding lane
+- Only split when file ownership and acceptance criteria are clearly separable
+- Use Gemini to supply research or verification in parallel without blocking the coding lanes
+
+Recommended split:
+- Claude: core fix, architecture-sensitive edit, debug-heavy path
+- Codex: follow-up refactor, tests, isolated module edit, independent review
+- Gemini: docs lookup, API verification, comparison, or regression-risk scan
+
+##### Scenario D — Mixed research + coding
+
+Use when implementation depends on fresh references.
+
+- Start Gemini immediately on research
+- Start Claude or Codex immediately only if part of the coding can proceed without waiting
+- If coding depends on the research result, keep coding sequential and pass a synthesized result forward
+- Do not block all workers waiting for one answer if at least one bounded lane can already move
+
+##### Scenario E — Review / audit
+
+Use when the user asks for review, risk analysis, or second opinion.
+
+- Claude: primary deep review for correctness and edge cases
+- Codex: independent second coding review when parallel confirmation adds value
+- Gemini: verify external docs, versions, standards, or compare with upstream references when needed
+
+#### Capacity-Aware Scheduling Rules
+
+1. Never plan around a second Claude lane unless it actually exists.
+2. When only one Claude account is available, reserve it for tasks where interactive clarification or deeper reasoning matters most.
+3. Use Codex to absorb overflow from the coding queue before delaying parallel execution.
+4. If more than 2 coding subtasks exist, prioritize:
+   - critical-path coding first
+   - bounded parallel coding second
+   - non-critical coding after a lane frees up
+5. If more than 3 research subtasks exist, batch Gemini work into waves and keep the highest-uncertainty research first.
+6. Rebalance when a worker blocks:
+   - Claude blocked -> consider moving bounded remainder to Codex
+   - Codex blocked -> move only if the task is small enough not to stall Claude's critical path
+   - Gemini blocked -> collapse research scope and continue with the highest-signal source
+
+### Phase 4: Monitor & Adapt
+
+1. Track worker status, blockers, and dependency completion
+2. Retry or re-scope failed delegation when practical
+3. Reassign work when actual capacity differs from the plan
+
+### Phase 5: Synthesize & Validate
+
+1. Merge outputs from workers
+2. Validate against the original goal and acceptance criteria
+3. Resolve contradictions before presenting results
+4. Present the final deliverable
 
 ## Constraints
 
