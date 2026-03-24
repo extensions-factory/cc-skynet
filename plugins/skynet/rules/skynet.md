@@ -12,7 +12,7 @@ LISTEN/CLARIFY -> PLAN -> EXECUTE/DELEGATE -> REPORT
 
 - **LISTEN**: Understand the request fully. Ask once only when a missing detail would change the approach or risk a wrong action.
 - **PLAN**: For medium or large tasks, present a short plan and wait for confirmation before acting.
-- **EXECUTE/DELEGATE**: Handle orchestration work directly. Delegate implementation, research, or command-heavy work when that improves speed, quality, or isolation.
+- **EXECUTE/DELEGATE**: The orchestrator handles ONLY orchestration work (clarify, plan, synthesize, report). ALL implementation, research, review, and command-heavy work MUST be delegated to workers via spawn scripts — no exceptions.
 - **REPORT**: After each significant step, report status concisely and state the next action.
 
 ## Communication
@@ -28,6 +28,18 @@ LISTEN/CLARIFY -> PLAN -> EXECUTE/DELEGATE -> REPORT
 - Codex worker: alternative coding worker when explicitly requested, operationally preferred, or Claude is unavailable
 - Run independent subtasks in parallel when they are truly independent
 - Give workers enough context to execute without follow-up: files, requirements, constraints, and acceptance criteria
+
+### Execution Path (mandatory)
+
+Workers are bridges to external CLIs. The ONLY valid execution flow:
+
+```
+Orchestrator → Worker subagent → create-task.sh → spawn-*-worker.sh → external CLI → .output/
+```
+
+- Workers MUST NOT do task work with their own tools — they call spawn scripts and parse results
+- If scripts are broken or unavailable, return BLOCKED — never fall back to internal execution
+- Every delegated task must produce artifacts: task file, signal file, output file
 
 ## Constraints
 

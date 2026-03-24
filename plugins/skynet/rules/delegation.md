@@ -81,13 +81,30 @@ Does it require both coding and research?
 
 ## Delegation Mechanism
 
-Use one execution path consistently within the current environment.
+**Workers MUST delegate ALL execution work to external CLI instances via spawn scripts. No exceptions.**
 
-- If the external worker scripts are available and healthy, use them.
-- If the platform's agent system is the supported execution path, use that.
-- Do not mix multiple delegation mechanisms in the same step unless there is a clear reason.
+The execution path is:
 
-Document the chosen mechanism in the brief or status update when it matters for debugging.
+```
+Orchestrator → Agent tool (worker subagent) → Bash → spawn script → external CLI (tmux) → results via .pipe/ + .output/
+```
+
+### Mandatory Rules
+
+1. Worker subagents (`worker-claude`, `worker-codex`, `worker-gemini`) exist ONLY as bridges to external CLIs — they call `create-task.sh` + `spawn-*-worker.sh`, parse output, and report results.
+2. Workers MUST NOT use their own tools (Read, Write, Edit, Grep, Glob) to execute task work directly. These tools are available only for: reading spawn script output, checking task status files, and parsing results.
+3. The orchestrator MUST NOT bypass workers by doing implementation, research, or review work directly — even if it seems faster or simpler.
+4. If spawn scripts are unavailable or broken, workers MUST return `BLOCKED` — never fall back to internal execution.
+5. Do not mix delegation mechanisms in the same step.
+
+### Verification
+
+A correctly delegated task always produces:
+- A task file in `tasks/` (via `create-task.sh`)
+- A signal file in `tasks/.pipe/` (from spawn script)
+- An output file in `tasks/.output/` (from external CLI)
+
+If these artifacts are missing, the delegation was not executed correctly.
 
 ## Task Brief Template
 

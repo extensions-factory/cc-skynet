@@ -71,6 +71,8 @@ Skip this phase if the task is a simple question or status check.
 
 ### Phase 3: Delegate
 
+**All execution work MUST go through worker subagents → spawn scripts → external CLIs. The orchestrator never executes implementation, research, or review work directly.**
+
 Delegate based on both task type and actual account capacity, not just ideal architecture.
 
 #### Worker Capacity Model
