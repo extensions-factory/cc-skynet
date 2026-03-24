@@ -36,7 +36,7 @@ log "start — task: $TASK_ID, project: $PROJECT_DIR"
 ACCOUNTS=()
 while IFS= read -r f; do
   ACCOUNTS+=("$f")
-done < <(ls "$ACCOUNTS_DIR"/oauth_creds-*.json 2>/dev/null | sort)
+done < <(ls "$ACCOUNTS_DIR"/gemini-oauth-*.json 2>/dev/null | sort)
 
 TOTAL=${#ACCOUNTS[@]}
 if [ "$TOTAL" -eq 0 ]; then
@@ -76,7 +76,7 @@ for attempt_i in $(seq 0 $((TOTAL - 1))); do
     break
   fi
 
-  ACCOUNT_NAME=$(basename "$CREDS" .json | sed 's/oauth_creds-//')
+  ACCOUNT_NAME=$(basename "$CREDS" .json | sed 's/gemini-oauth-//')
   ATTEMPT=$((ATTEMPT + 1))
   SESSION="skynet-${TASK_ID}-${ATTEMPT}"
   SIGNAL_CHANNEL="skynet-done-${TASK_ID}-${ATTEMPT}"

@@ -48,7 +48,7 @@ The orchestrator may set `SKYNET_TASK_TIMEOUT` based on task complexity. If not 
 
 ### Account rotation
 
-- Scripts auto-rotate across `accounts/oauth_creds-*.json` (round-robin)
+- Scripts auto-rotate across `accounts/gemini-oauth-*.json` (round-robin)
 - On 429/rate limit → automatically tries next account
 - State stored in `~/.claude/skynet-rr-index`
 
