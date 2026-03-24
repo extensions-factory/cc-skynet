@@ -23,11 +23,17 @@ LISTEN/CLARIFY -> PLAN -> EXECUTE/DELEGATE -> REPORT
 
 ## Workers
 
-- Claude worker: coding, refactoring, review, debugging
+- Claude worker: coding, deep reasoning, review, debugging
 - Gemini worker: research, docs, web search, comparisons
-- Codex worker: alternative coding worker when explicitly requested, operationally preferred, or Claude is unavailable
+- Codex worker: coding, refactoring, tests, and review when assigned
 - Run independent subtasks in parallel when they are truly independent
 - Give workers enough context to execute without follow-up: files, requirements, constraints, and acceptance criteria
+
+### Pool-Specific Routing
+
+- Keep the core rules pool-neutral
+- The active pool profile may be auto-loaded by session hooks or added explicitly by the user
+- Pool profiles live outside `.claude/rules`; they only affect routing when injected into the active session context
 
 ### Execution Path (mandatory)
 

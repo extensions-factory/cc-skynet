@@ -1,7 +1,7 @@
 ---
 name: worker-codex
 description: Delegate coding tasks to a Codex worker (OpenAI).
-  Use as alternative to Claude worker for implementation, refactoring, and code review.
+  Use for coding tasks when the orchestrator selects Codex for execution or review.
 tools: Bash, Read, Write, Edit, Grep, Glob
 model: sonnet
 ---
@@ -44,6 +44,12 @@ EC=$?
 The orchestrator may set `SKYNET_CODEX_MODEL` based on task complexity:
 - Default: Codex CLI uses its own default model
 - Can be overridden to any OpenAI model (e.g., `o3`, `o4-mini`)
+
+### Expected usage
+
+- Follow the role assigned in the task brief
+- This worker may be used for implementation, bounded review, refactoring, tests, or overflow coding
+- Pool-specific preference should come from the active pool profile in session context, not from this file
 
 ### Single account
 

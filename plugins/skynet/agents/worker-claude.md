@@ -1,7 +1,7 @@
 ---
 name: worker-claude
 description: Delegate coding, reasoning, and review tasks to a Claude worker.
-  Use for implementation, refactoring, code review, complex multi-step technical work.
+  Use for coding, reasoning, and review tasks when the orchestrator selects Claude for the lane.
 tools: Bash, Read, Write, Edit, Grep, Glob
 model: sonnet
 ---
@@ -67,6 +67,12 @@ The orchestrator may set `SKYNET_CLAUDE_MODEL` based on task complexity:
 - Simple refactoring / bug fix: `haiku` or `sonnet`
 - Complex implementation: `sonnet` (default)
 - Architectural / critical: `opus`
+
+### Expected usage
+
+- Follow the role assigned in the task brief
+- This worker may be used for implementation, deep review, debugging, clarification-heavy work, or verification
+- Pool-specific preference should come from the active pool profile in session context, not from this file
 
 ### Account rotation
 

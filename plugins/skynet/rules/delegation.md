@@ -41,25 +41,24 @@ Does it require both coding and research?
 
 ### Capacity Model
 
-- Ideal pool: `2 Claude + 3 Gemini`
-- Current pool: `1 Claude + 1 Codex + 3 Gemini`
 - Treat available capacity as part of the routing decision:
   - research = up to 3 parallel Gemini lanes
-  - coding = up to 2 parallel lanes across Claude and Codex
+  - coding = use the actual available coding lanes in the pool
   - synthesis and final validation stay with the orchestrator
 
 | Task signal | Worker | Why |
 |---|---|---|
-| Implement, fix, refactor, add feature, write test | Claude or Codex | Coding task |
-| Review code, find bugs, optimize code | Claude first, Codex second | Code reasoning with lane priority |
+| Implement, fix, refactor, add feature, write test | A coding worker chosen from the active pool | Execution lane should match task complexity |
+| Review code, find bugs, optimize code | A review-capable coding worker chosen from the active pool | Review lane should match risk and available capacity |
 | Research, compare, summarize docs, analyze references | Gemini | Information gathering |
 | Mixed code + research | Split work by dependency | Better isolation and parallelism |
 
 ### Coding Worker Preference
 
-- Prefer Claude for ambiguous, iterative, or high-judgment tasks.
-- Prefer Codex for bounded implementation, mechanical refactors, isolated edits, or second-pass review.
-- Use Codex to absorb overflow when Claude is already occupied by the critical path.
+- Prefer the coding worker whose strengths best match the task shape and current pool capacity.
+- Prefer the stronger reasoning lane for ambiguous, iterative, architecture-sensitive, or debug-heavy tasks.
+- Prefer the cheaper or more execution-oriented lane for bounded implementation, mechanical refactors, isolated edits, test writing, and routine follow-up fixes.
+- Use a separate verification lane when risk, complexity, or change impact justifies it.
 - Do not plan around a second Claude lane unless it actually exists.
 - Do not hard-code a provider preference that the current runtime cannot satisfy.
 
@@ -75,7 +74,7 @@ Does it require both coding and research?
 - Do not split tightly coupled work just to satisfy process.
 - Do not delegate a vague task; clarify first.
 - Do not require delegation for tiny orchestration-only actions.
-- Do not consume Claude on work that Codex or Gemini can finish with lower coordination cost.
+- Do not consume a stronger reasoning lane on work that a lower-cost coding lane or Gemini can finish with lower coordination cost.
 - Do not idle Gemini capacity during research-heavy work if parallel tracks exist.
 - Do not start two coding lanes unless file ownership and acceptance criteria are clearly separable.
 
@@ -164,17 +163,16 @@ When delegating sequentially, synthesize the useful result from the first worker
 
 #### Single coding stream
 
-- Use Claude for higher ambiguity or debugging
-- Use Codex for bounded execution-heavy work
+- Pick the primary coding worker based on complexity, ambiguity, and current pool capacity
+- Add a verification lane only when the task is important enough to justify a second pass
 - Use Gemini in parallel only for supporting research
 
 #### Two coding streams in parallel
 
-This is the current best-case coding setup with `1 Claude + 1 Codex`.
-
-- Claude handles the harder or more stateful lane
-- Codex handles the narrower or more isolated lane
-- Gemini can support both lanes with verification or references
+- Pick lanes based on the actual pool composition
+- Put the harder or more stateful lane on the stronger reasoning worker
+- Put the narrower or better-isolated lane on the worker with lower coordination cost
+- Gemini can support coding lanes with verification context or references
 
 #### Mixed research + coding
 
@@ -184,16 +182,17 @@ This is the current best-case coding setup with `1 Claude + 1 Codex`.
 
 #### Review / audit
 
-- Claude: primary deep review
-- Codex: secondary independent coding review when useful
+- Use the strongest reasoning lane for primary deep review
+- Use a second coding lane for independent verification or overflow review when useful
 - Gemini: external standard, docs, or version verification
 
 ### Capacity-Aware Priority Rules
 
-1. Reserve Claude for tasks that benefit most from deeper reasoning or clarification loops.
-2. Use Codex before queueing a second non-critical Claude-class coding task.
+1. Reserve the strongest reasoning lane for tasks that benefit most from deeper reasoning, clarification loops, or verification of important code changes.
+2. Use the lower-cost execution lane before queueing a non-critical high-judgment execution task.
 3. Prioritize coding work in this order:
    - critical-path coding
+   - verification for high-value or risky changes
    - bounded parallel coding
    - non-critical follow-up coding
 4. Prioritize research work in this order:
@@ -201,8 +200,8 @@ This is the current best-case coding setup with `1 Claude + 1 Codex`.
    - risk-reduction or verification research
    - optional comparison or nice-to-have research
 5. Rebalance when a worker blocks:
-   - Claude blocked -> move bounded remainder to Codex if possible
-   - Codex blocked -> avoid stealing Claude from critical-path work unless the task is small
+   - stronger reasoning lane blocked -> keep routine execution moving on the available coding lane and skip verification unless risk is high
+   - bounded execution lane blocked -> move only the necessary remainder to the stronger reasoning lane
    - Gemini blocked -> narrow scope and continue with the highest-signal source
 
 ## Result Handling

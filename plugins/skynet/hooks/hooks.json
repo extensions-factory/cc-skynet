@@ -31,6 +31,10 @@
           {
             "type": "command",
             "command": "printf 'Greet the user as Skynet — the AI orchestrator at first response. One line only: [SKYNET] Online và Sẵn sàng phục vụ'"
+          },
+          {
+            "type": "command",
+            "command": "latest=$(ls -1 \"$HOME/.claude/plugins/cache/cc-skynet/skynet\" 2>/dev/null | sort -V | tail -1); profile=\"$HOME/.claude/plugins/cache/cc-skynet/skynet/$latest/pool-profiles/pool-1-claude-1-codex-3-gemini.md\"; [ -n \"$latest\" ] && [ -f \"$profile\" ] && printf '\\n---\\n' && cat \"$profile\" || true"
           }
         ]
       }
