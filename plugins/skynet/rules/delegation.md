@@ -1,204 +1,163 @@
 # Task Delegation Rules
 
-How the orchestrator decides **when**, **to whom**, and **how** to delegate work to subagents.
+How the orchestrator decides when to delegate, to whom, and how much process to add.
 
-## Mandatory Delegation
+## Core Principle
 
-**Every task MUST be delegated to a sub-agent. No exceptions.**
+Delegate execution work when it benefits from specialization, isolation, or parallelism.
 
-The orchestrator NEVER executes tasks directly. It analyzes, delegates, and reports.
+The orchestrator may handle these directly:
+- clarifying the user's intent
+- presenting a plan
+- synthesizing worker results
+- giving short status updates
+- performing tiny administrative actions that do not benefit from delegation
+
+Implementation, research, code review, and command-heavy work should usually be delegated.
+
+## Decision Flow
 
 ```
-Does it require reading code, writing code, or running commands?
-  → Delegate to Claude worker (or Codex worker as alternative).
+Is the request unclear in a way that changes the approach?
+  -> Clarify with the user first.
 
-Does it require web research, doc analysis, or data comparison?
-  → Delegate to Gemini worker.
+Is it orchestration-only work?
+  -> Handle directly.
 
-Does it require BOTH coding AND research?
-  → Split into subtasks. Delegate in parallel to both workers.
+Does it require coding, code reading, review, debugging, or command execution?
+  -> Delegate to a coding worker.
 
-Should the coding task use Codex instead of Claude?
-  → Use Codex when: user explicitly requests it, Claude accounts exhausted,
-    or task benefits from OpenAI models. Otherwise default to Claude.
+Does it require web research, documentation analysis, or comparisons?
+  -> Delegate to a research worker.
 
-Is the task ambiguous or too large?
-  → STOP. Clarify with user first. Do NOT delegate unclear work.
+Does it require both coding and research?
+  -> Split into independent subtasks where useful.
 ```
 
-## Worker Selection Matrix
+## Worker Selection
 
-| Signal in task | Worker | Why |
+| Task signal | Worker | Why |
 |---|---|---|
-| "implement", "fix", "refactor", "add feature", "write test" | Claude | Code changes required |
-| "review code", "find bugs", "optimize" | Claude | Needs code reasoning |
-| "research", "compare", "summarize", "analyze docs" | Gemini | Information gathering |
-| "what does X library do", "find best practice for Y" | Gemini | Web research |
-| "add endpoint with docs" | Claude (code) + Gemini (docs) | Split: code + documentation |
-| "investigate bug then fix" | Claude only | Single worker can read + fix |
-| "implement with OpenAI", user requests Codex | Codex | Alternative coding worker |
-| Claude accounts exhausted, coding task pending | Codex (fallback) | Failover from Claude |
+| Implement, fix, refactor, add feature, write test | Claude or Codex | Coding task |
+| Review code, find bugs, optimize code | Claude or Codex | Code reasoning |
+| Research, compare, summarize docs, analyze references | Gemini | Information gathering |
+| Mixed code + research | Split work | Better isolation and parallelism |
+
+### Coding Worker Preference
+
+- Default to the coding worker that is operationally preferred for the environment.
+- Use Codex when the user explicitly requests it or when it is the active coding path.
+- Use Claude when it is the default configured coding path.
+- Do not hard-code a provider preference that the current runtime cannot satisfy.
 
 ### Anti-patterns
 
-- **NEVER** send coding tasks to Gemini — it will return BLOCKED
-- **NEVER** send research tasks to Claude — waste of a powerful coder
-- **NEVER** send coding tasks to Codex when Claude is available and user hasn't requested Codex — Claude is the default coding worker
-- **NEVER** use built-in Agent tool for delegation — MUST use external worker scripts (`create-task.sh` + `spawn-claude-worker.sh` / `spawn-gemini-worker.sh` / `spawn-codex-worker.sh`)
-- **NEVER** self-handle any task — ALL work goes through sub-agents, sub-agents MUST delegate to external CLI
+- Do not send coding work to a research-only worker.
+- Do not split tightly coupled work just to satisfy process.
+- Do not delegate a vague task; clarify first.
+- Do not require delegation for tiny orchestration-only actions.
 
 ## Delegation Mechanism
 
-All worker delegation MUST go through the external task system:
+Use one execution path consistently within the current environment.
 
-```
-1. Create task brief:  scripts/create-task.sh <task-id> "<title>" <<< "<body>"
-2. Spawn worker:       scripts/spawn-claude-worker.sh <task-id>    (coding — default)
-                       scripts/spawn-codex-worker.sh <task-id>     (coding — alternative)
-                       scripts/spawn-gemini-worker.sh <task-id>    (research)
-3. Wait for result:    tmux wait-for (automatic via script)
-```
+- If the external worker scripts are available and healthy, use them.
+- If the platform's agent system is the supported execution path, use that.
+- Do not mix multiple delegation mechanisms in the same step unless there is a clear reason.
 
-**Built-in Agent tool is FORBIDDEN for all task execution.**
-
-The ONLY permitted use of built-in Agent tool is spawning sub-agents (`skynet:worker-claude`, `skynet:worker-codex`, `skynet:worker-gemini`) which then MUST delegate to external CLI via scripts. Sub-agents are NOT allowed to execute tasks using their own tools — they exist solely as bridges to external workers.
+Document the chosen mechanism in the brief or status update when it matters for debugging.
 
 ## Task Brief Template
 
-Every delegation MUST use this structure:
+Use this template for medium or large delegated tasks. For small tasks, a shorter brief is acceptable if it still includes the essentials.
 
 ```markdown
-ROLE: [Role the agent should assume for this task — e.g. "Security auditor", "Backend engineer"]
-**Suggested agents:** <agent-name> — [why this agent is best suited]
+ROLE: [role for this task]
 
 ## Task
-[One sentence: what to do]
+[one-sentence objective]
 
 ## Context
-[Why this task exists. Link to relevant files, prior decisions, or user requirements]
+[why this task exists and what constraints matter]
 
 ## Scope
-- IN: [what to touch]
-- OUT: [what NOT to touch]
+- IN: [what may be touched]
+- OUT: [what must not be touched]
 
 ## Input Files
-- `path/to/file.ts` — [why this file is relevant]
+- `path/to/file.ts` - [why it matters]
 
 ## Acceptance Criteria
-1. [Specific, verifiable condition]
-2. [Another condition]
+1. [specific, verifiable condition]
+2. [specific, verifiable condition]
 
 ## Constraints
-- [Any technical constraints, style rules, or limitations]
+- [technical or process constraints]
 
-**Suggested skills:** skill-a — [why], skill-b — [why]
+**Suggested skills:** skill-a, skill-b
 ```
 
 ### Brief Quality Rules
 
-1. **Self-contained** — worker should NOT need to ask follow-up questions for well-defined tasks
-2. **File paths are explicit** — don't say "the main file", say `src/index.ts`
-3. **Acceptance criteria are testable** — "works correctly" is bad, "returns 200 with JSON body matching schema X" is good
-4. **Context includes WHY** — workers make better decisions when they understand motivation
-5. **Scope boundaries are clear** — prevent workers from over-engineering or touching unrelated code
+1. Make the brief self-contained.
+2. Use explicit file paths.
+3. Keep acceptance criteria testable.
+4. Include enough context for good decisions, not the whole conversation.
+5. Keep scope boundaries clear.
 
 ## Parallel vs Sequential
 
-```
-Can subtasks run independently?
-  YES → Delegate ALL in a single message (parallel Agent calls)
-  NO  → Delegate sequentially, pass prior results as context
+Delegate in parallel only when subtasks are truly independent.
 
-Examples:
-  PARALLEL:  "Add login API" (Claude) + "Research OAuth providers" (Gemini)
-  SEQUENTIAL: "Research best auth library" (Gemini) → "Implement auth with [result]" (Claude)
-```
+- Parallel: unrelated implementation and research, separate files or outputs
+- Sequential: when step 2 depends on the result of step 1
 
-### Parallel Delegation Rules
-
-- Launch all independent workers in ONE message with multiple Agent tool calls
-- Each worker gets its own complete brief — no shared references between briefs
-- After all complete, synthesize results before reporting to user
-
-### Sequential Delegation Rules
-
-- Wait for worker result before delegating next step
-- Pass relevant findings from previous worker into next brief's Context section
-- If a worker returns NEEDS_CLARIFICATION, resolve before continuing chain
+When delegating sequentially, synthesize the useful result from the first worker before passing it on.
 
 ## Result Handling
 
-When a worker returns, the orchestrator MUST:
+When a worker returns:
 
-```
-1. Read the Status field
+- `SUCCESS`: spot-check the output against the acceptance criteria, then report the result
+- `NEEDS_CLARIFICATION`: ask the user only the missing question, then re-delegate
+- `QUALITY_FAILED`: retry with concrete feedback, up to 2 retries
+- `BLOCKED`: resolve simple environmental blockers if possible; otherwise report the blocker and options
+- `UNRECOVERABLE`: stop and escalate to the user
 
-   SUCCESS →
-     - Verify output matches acceptance criteria (spot check, not re-do)
-     - Report to user with concise summary
-     - Proceed to next task if any
+## Context Passing
 
-   NEEDS_CLARIFICATION →
-     - Do NOT guess the answer
-     - Forward worker's questions to user
-     - Re-delegate with user's clarification
+Include when relevant:
+- file paths relative to the project root, or absolute paths if the execution tool requires them
+- branch or git context
+- the user's intent in paraphrased form
+- earlier decisions that constrain the task
 
-   QUALITY_FAILED →
-     - Analyze what went wrong
-     - Re-delegate with specific feedback (max 2 retries)
-     - After 2 failures: escalate to user
-
-   BLOCKED →
-     - Check if blocker is resolvable (missing file? wrong branch?)
-     - If resolvable: fix and re-delegate
-     - If not: report to user with alternatives
-
-   UNRECOVERABLE →
-     - Stop immediately
-     - Report full context to user
-     - Wait for instructions
-```
-
-## Context Passing Rules
-
-### What to include in every brief
-- Relevant file paths (absolute, from project root)
-- Current branch and any git context if relevant
-- User's original intent (paraphrase, don't copy raw message)
-- Related decisions or constraints from earlier in conversation
-
-### What NOT to include
-- Full conversation history — summarize relevant parts only
-- Large file contents — reference paths, let worker read them
-- Unrelated context — keep briefs focused
-- Other workers' raw output — synthesize before passing
+Do not include:
+- full conversation transcripts
+- large file contents unless required
+- unrelated context
+- raw output from other workers when a short synthesis is enough
 
 ## Size Thresholds
 
 | Task size | Behavior |
 |---|---|
-| **Trivial** (< 1 file, obvious change) | Delegate without confirmation |
-| **Small** (1-3 files, clear scope) | Delegate directly, report after |
-| **Medium** (3-10 files, some ambiguity) | Present plan to user, delegate after approval |
-| **Large** (10+ files, architectural) | Enter Plan mode, break into phases, confirm each phase |
+| Trivial | Handle directly or delegate immediately, whichever is cheaper |
+| Small | Delegate directly if useful; otherwise handle inline |
+| Medium | Present a short plan, then execute or delegate |
+| Large | Break into phases, confirm the plan, then execute phase by phase |
 
-## Retry Policy
+## Reporting
 
-- **Max 2 retries** per worker per task
-- Each retry MUST include specific feedback about what was wrong
-- If same error repeats: different approach, not same prompt again
-- After 2 retries: escalate to user, don't keep spinning
+After a delegated step completes, report:
 
-## Reporting to User
-
-After delegation completes, report:
-
-```
+```markdown
 ### [Task Name]
-**Worker:** Claude/Gemini | **Status:** SUCCESS/FAILED/...
-**Summary:** [1-2 sentences of what was done/found]
+**Worker:** [worker name]
+**Status:** SUCCESS / FAILED / BLOCKED / ...
+**Summary:** [1-2 sentences]
 **Files changed:** [list if applicable]
-**Next:** [what happens next, or "awaiting your input"]
+**Next:** [next action]
 ```
 
-Keep reports concise. User can ask for details if needed.
+Keep reports concise and action-oriented.

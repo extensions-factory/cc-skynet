@@ -1,30 +1,32 @@
 # Build Counter
 
-Track iteration progress between commits by bumping a build counter suffix on the current version.
+Use a build counter suffix only when it helps track testable iterations across versioned artifacts.
 
 ## How it works
 
-After any code change that can be tested — **before running tests or asking user to verify** — bump the build counter suffix across ALL version files:
+Examples:
 
-```
-0.5.0   →  0.5.0-1   (first testable change)
-0.5.0-1 →  0.5.0-2   (second change)
-0.5.0-2 →  0.5.0-3   (and so on)
+```text
+0.5.0   -> 0.5.0-1
+0.5.0-1 -> 0.5.0-2
+0.5.0-2 -> 0.5.0-3
 ```
 
 ## When to bump
 
-- Made code changes AND there is something testable (run tests, verify behavior, check output)
-- Applied a fix mid-session before asking user to re-test
+- The project already uses synchronized version files for distributable artifacts
+- You made a testable code change and want to mark an iteration before verification
+- A mid-session fix changes behavior and the build suffix is part of the team's release workflow
 
 ## When NOT to bump
 
 - Docs-only or comment-only changes
-- Changes with no testable output
-- At commit time (commit rules handle stripping the counter and applying semver bump)
+- Internal edits with no testable output
+- Fast local iteration where the counter would only add diff noise
+- At commit time; commit rules should strip the suffix and apply the semantic version bump if needed
 
-## Version files
+## Version Files
 
-Same files as commit rules — find with: `grep -r '"version"' --include="*.json" -l`
-
-All version files must stay in sync, including the build counter suffix.
+- Use the same release-related version files identified by the commit rules
+- Keep those files in sync if a build counter is used
+- Do not introduce a build counter into unrelated manifests just because they contain a `version` field

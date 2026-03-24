@@ -1,33 +1,37 @@
 # Commit Rules
 
-When the user asks to commit, always bump the version first.
+When the user asks to commit, review the change scope first, then bump version if the project uses versioned artifacts.
 
 ## Version Bump
 
-**Step 1.** Analyze staged/unstaged changes (`git diff`, `git status`) to determine bump type:
+**Step 1.** Inspect staged and unstaged changes with `git diff` and `git status`.
+
+**Step 2.** Determine whether a version bump is appropriate.
 
 | Change type | Bump |
 |---|---|
-| Breaking change, major refactor, removed feature | `major` |
-| New feature, new file, new capability | `minor` |
-| Bug fix, docs, style, refactor, chore | `patch` |
+| Breaking change, removed capability, incompatible behavior change | `major` |
+| New user-facing capability or distributable feature | `minor` |
+| Bug fix, docs, test, style, refactor, chore, internal-only change | `patch` |
 
-**Step 2.** Find all files in the project that contain a version field. Common locations:
-- `**/plugin.json` — `"version": "x.y.z"`
-- `**/marketplace.json` — `"version": "x.y.z"`
-- `package.json`, `pyproject.toml`, `Cargo.toml`, etc.
+Adding a file alone does **not** imply `minor`.
 
-Search with: `grep -r '"version"' --include="*.json" -l` (or equivalent for other formats).
+**Step 3.** Find versioned manifest files that are meant to stay aligned, for example:
+- `**/plugin.json`
+- `**/marketplace.json`
+- `package.json`, `pyproject.toml`, `Cargo.toml`
 
-**Step 3.** If current version has a build counter suffix (e.g. `0.5.0-3`), strip it first, then apply the semver bump.
+Search with a targeted command such as `rg -n '"version"'`.
 
-**Step 4.** Bump the version consistently across ALL found files.
+**Step 4.** If the current version includes a build counter suffix such as `0.5.0-3`, strip the suffix before applying the semver bump.
 
-**Step 5.** Stage the version file changes, then commit everything together.
+**Step 5.** Bump only the version files that are part of the same release surface, and keep those files in sync.
+
+**Step 6.** Stage the version changes together with the commit.
 
 ## Rules
 
-- Never commit without bumping version first
-- All version files must stay in sync — no mismatches
-- State the bump type and new version in the commit message
-- If unsure between bump types, choose the lower one and ask
+- Do not commit without checking whether versioned artifacts need a bump
+- Keep related version files in sync; do not blindly edit unrelated manifests
+- State the bump type and new version in the commit message when a version bump is applied
+- If bump type is ambiguous, choose the lower bump and ask before committing

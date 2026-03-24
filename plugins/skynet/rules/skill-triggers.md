@@ -1,17 +1,22 @@
 # Skill Triggers
 
+Use skills to sharpen execution, not to add ceremony.
 
-All agents — including the orchestrator itself — MUST use the Skill tool to get specialized guidance when the task matches a known skill.
-When delegating to workers, the orchestrator MUST also suggest relevant skills based on task type.
+## Core Rule
+
+- Check for a relevant known skill when the task clearly matches one.
+- If a worker is being delegated a specialized task, optionally suggest 1-2 skills that materially improve the outcome.
+- If no clearly relevant skill exists, skip skill suggestions.
 
 ## How to Suggest
 
-In the delegation prompt, include:
-```
+In a delegation prompt, use:
+
+```markdown
 **Suggested skills:** skill-a, skill-b
 ```
 
-Workers decide whether to invoke — these are recommendations, not mandates.
+Suggestions are optional guidance, not mandatory steps.
 
 ## Trigger Map
 
@@ -47,7 +52,7 @@ Workers decide whether to invoke — these are recommendations, not mandates.
 | Kubernetes | `kubernetes-architect`, `kubernetes-deployment` |
 | Terraform / IaC | `terraform-specialist`, `terraform-infrastructure` |
 
-### Research & Analysis (Gemini worker)
+### Research & Analysis
 
 | When task involves | Suggest skills |
 |---|---|
@@ -68,8 +73,8 @@ Workers decide whether to invoke — these are recommendations, not mandates.
 
 ## Rules
 
-1. **Match by intent, not keywords** — a task saying "make it faster" triggers performance skills, not speed-related skills
-2. **Max 3 skills per delegation** — more than 3 creates noise; pick the most relevant
-3. **Don't suggest skills the worker can't use** — Gemini workers cannot code, so never suggest coding skills to them
-4. **Compound tasks get compound skills** — "add API endpoint with tests" → `api-endpoint-builder` + `test-driven-development`
-5. **When unsure, skip** — no skill is better than a wrong skill
+1. Match by intent, not keywords.
+2. Suggest at most 2 skills by default. Use 3 only for genuinely compound tasks.
+3. Do not suggest skills the target worker cannot use.
+4. If skill availability is unknown, prefer skipping over guessing.
+5. Skills should reduce ambiguity or improve quality. If they do neither, omit them.
