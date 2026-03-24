@@ -181,12 +181,12 @@ rm -f "$EXIT_FILE" "$STATUS_FILE" "$QUESTION_FILE" "$STATE_FILE"
 ACCOUNTS=()
 while IFS= read -r f; do
   ACCOUNTS+=("$f")
-done < <(ls "$ACCOUNTS_DIR"/claude_ooth-*.txt 2>/dev/null | sort)
+done < <(ls "$ACCOUNTS_DIR"/claude-ooth-*.txt 2>/dev/null | sort)
 
 TOTAL=${#ACCOUNTS[@]}
 if [ "$TOTAL" -eq 0 ]; then
   log "ERROR: no accounts in $ACCOUNTS_DIR"
-  echo "ERROR: no Claude token files found in $ACCOUNTS_DIR (expected claude_ooth-*.txt)" >&2
+  echo "ERROR: no Claude token files found in $ACCOUNTS_DIR (expected claude-ooth-*.txt)" >&2
   exit 1
 fi
 log "accounts: $TOTAL found"
@@ -219,7 +219,7 @@ for attempt_i in $(seq 0 $((TOTAL - 1))); do
     break
   fi
 
-  ACCOUNT_NAME=$(basename "$CREDS" .txt | sed 's/claude_ooth-//')
+  ACCOUNT_NAME=$(basename "$CREDS" .txt | sed 's/claude-ooth-//')
   ATTEMPT=$((ATTEMPT + 1))
   SESSION="skynet-claude-${TASK_ID}-${ATTEMPT}"
   SIGNAL_CHANNEL="skynet-csig-${TASK_ID}-${ATTEMPT}"

@@ -70,7 +70,7 @@ The orchestrator may set `SKYNET_CLAUDE_MODEL` based on task complexity:
 
 ### Account rotation
 
-- Scripts auto-rotate across `accounts/claude_ooth-*.txt` (round-robin)
+- Scripts auto-rotate across `accounts/claude-ooth-*.txt` (round-robin)
 - On 429/rate limit → automatically tries next account
 - State stored in `~/.claude/skynet-claude-rr-index`
 
