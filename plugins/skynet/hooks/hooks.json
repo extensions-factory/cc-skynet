@@ -41,6 +41,33 @@
     ],
     "PreToolUse": [
       {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️ STOP: Do NOT edit/write files directly for task work. ALL implementation MUST go through workers + spawn scripts. Rules: .claude/rules/delegation.md'"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); case \"$CMD\" in *spawn-*-worker*|*create-task*|*skills-link*|*skills-fetch*|*agents-link*|*setup-cron*|*auto-update*|*log-common*) ;; *\"tasks/.output\"*|*\"tasks/.pipe\"*|*SCRIPT_DIR*|*\"plugins/cache/cc-skynet\"*) ;; *) echo '⚠️ CHECK: Only orchestration commands (git, ls, status) allowed directly. Implementation MUST go through workers + spawn scripts. Rules: .claude/rules/delegation.md' ;; esac"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📋 DELEGATE: Worker MUST use create-task.sh + spawn-*-worker.sh for ALL execution. No internal tool fallback. Rules: .claude/rules/delegation.md'"
+          }
+        ]
+      },
+      {
         "matcher": "Edit|Write|Bash",
         "hooks": [
           {
