@@ -6,6 +6,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-03-24
+
+### Changed
+
+- `skills-link.sh`: added Codex skills mirror (`.codex/skills → .claude/skills`) — refactored Gemini-only block into loop handling all CLI mirrors
+
+## [0.9.0] - 2026-03-24
+
+### Added
+
+- Codex CLI worker for OpenAI-based code delegation with tmux signaling
+
 ## [0.8.0] - 2026-03-24
 
 ### Fixed

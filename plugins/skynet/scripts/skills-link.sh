@@ -14,19 +14,20 @@ log() { echo "[$(date '+%H:%M:%S')] [skills-link] $*" >> "$LOG"; }
 
 log "start — cwd: $(pwd)"
 
-# ── Gemini skills mirror ─────────────────────────────────────────────────────
-# Symlink .gemini/skills → .claude/skills so Gemini CLI sees the same skills
-GEMINI_SKILLS=".gemini/skills"
-mkdir -p "$(dirname "$GEMINI_SKILLS")"
-if [ -L "$GEMINI_SKILLS" ] && [ ! -e "$GEMINI_SKILLS" ]; then
-  rm "$GEMINI_SKILLS"
-  log "removed broken .gemini/skills symlink"
-fi
-if [ ! -e "$GEMINI_SKILLS" ]; then
-  ln -sf "../$SKILLS_DIR" "$GEMINI_SKILLS"
-  log "linked .gemini/skills → $SKILLS_DIR"
-  echo "linked: .gemini/skills → $SKILLS_DIR"
-fi
+# ── Skills mirrors ───────────────────────────────────────────────────────────
+# Symlink .gemini/skills and .codex/skills → .claude/skills so all CLIs see the same skills
+for mirror in ".gemini/skills" ".codex/skills"; do
+  mkdir -p "$(dirname "$mirror")"
+  if [ -L "$mirror" ] && [ ! -e "$mirror" ]; then
+    rm "$mirror"
+    log "removed broken $mirror symlink"
+  fi
+  if [ ! -e "$mirror" ]; then
+    ln -sf "../$SKILLS_DIR" "$mirror"
+    log "linked $mirror → $SKILLS_DIR"
+    echo "linked: $mirror → $SKILLS_DIR"
+  fi
+done
 
 [ -f "$PROJECT_CONFIG" ] || { log "no $PROJECT_CONFIG — skip"; exit 0; }
 [ -d "$CACHE_DIR" ]      || { log "cache not found — skip"; echo "skills cache not found — run /skynet-skills fetch first" >&2; exit 0; }
