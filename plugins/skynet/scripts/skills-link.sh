@@ -3,30 +3,61 @@
 # Reads categories from .claude/skynet.json, resolves via skills_index.json
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/log-common.sh"
+
 CACHE_DIR="$HOME/.claude/skills-cache/antigravity-awesome-skills"
 INDEX="$CACHE_DIR/skills_index.json"
 PROJECT_CONFIG=".claude/skynet.json"
 SKILLS_DIR=".claude/skills"
-LOG="$HOME/.claude/logs/skynet-skills.log"
+skynet_init_log
 
-mkdir -p "$(dirname "$LOG")"
-log() { echo "[$(date '+%H:%M:%S')] [skills-link] $*" >> "$LOG"; }
+log() {
+  skynet_log "skills-link" "$*"
+}
+
+ensure_mirror_link() {
+  local mirror="$1"
+  local target="../$SKILLS_DIR"
+
+  mkdir -p "$(dirname "$mirror")"
+
+  if [ -L "$mirror" ] && [ ! -e "$mirror" ]; then
+    rm "$mirror"
+    log "removed broken $mirror symlink"
+  fi
+
+  if [ -L "$mirror" ]; then
+    local current_target
+    current_target=$(readlink "$mirror" 2>/dev/null || true)
+    if [ "$current_target" = "$target" ]; then
+      log "$mirror already points to $target"
+      return 0
+    fi
+    rm "$mirror"
+    log "relinked $mirror from $current_target to $target"
+  elif [ -e "$mirror" ]; then
+    if [ -d "$mirror" ] && [ -z "$(find "$mirror" -mindepth 1 -maxdepth 1 2>/dev/null)" ]; then
+      rmdir "$mirror"
+      log "removed empty directory at $mirror before linking"
+    else
+      log "cannot link $mirror because it already exists and is not a replaceable symlink"
+      echo "skip: $mirror exists and is not a symlink" >&2
+      return 0
+    fi
+  fi
+
+  ln -snf "$target" "$mirror"
+  log "linked $mirror -> $target"
+  echo "linked: $mirror -> $target"
+}
 
 log "start — cwd: $(pwd)"
 
 # ── Skills mirrors ───────────────────────────────────────────────────────────
 # Symlink .gemini/skills and .codex/skills → .claude/skills so all CLIs see the same skills
 for mirror in ".gemini/skills" ".codex/skills"; do
-  mkdir -p "$(dirname "$mirror")"
-  if [ -L "$mirror" ] && [ ! -e "$mirror" ]; then
-    rm "$mirror"
-    log "removed broken $mirror symlink"
-  fi
-  if [ ! -e "$mirror" ]; then
-    ln -sf "../$SKILLS_DIR" "$mirror"
-    log "linked $mirror → $SKILLS_DIR"
-    echo "linked: $mirror → $SKILLS_DIR"
-  fi
+  ensure_mirror_link "$mirror"
 done
 
 [ -f "$PROJECT_CONFIG" ] || { log "no $PROJECT_CONFIG — skip"; exit 0; }

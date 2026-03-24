@@ -12,6 +12,10 @@
 # Exit codes: 0=SUCCESS, 1=FAILED, 2=TIMEOUT
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/log-common.sh"
+skynet_init_log
+
 TASK_FILE="$(realpath "${1:?Usage: spawn-gemini-worker.sh <task-file>}")"
 TIMEOUT="${SKYNET_TASK_TIMEOUT:-0}"
 PROJECT_DIR="$(pwd)"
@@ -24,12 +28,11 @@ OUTPUT_FILE="$OUTPUT_DIR/${TASK_ID}.md"
 ERR_FILE="$OUTPUT_DIR/${TASK_ID}.err"
 EXIT_FILE="$PIPE_DIR/${TASK_ID}.exit"
 STATUS_FILE="$PIPE_DIR/${TASK_ID}.status"
-LOG="$HOME/.claude/logs/skynet-skills.log"
 
-mkdir -p "$PIPE_DIR" "$OUTPUT_DIR" "$(dirname "$LOG")"
+mkdir -p "$PIPE_DIR" "$OUTPUT_DIR" "$LOG_DIR"
 rm -f "$EXIT_FILE" "$STATUS_FILE"
 
-log() { echo "[$(date '+%H:%M:%S')] [gemini-worker] $*" >> "$LOG"; }
+log() { skynet_log "gemini-worker" "$*"; }
 log "start — task: $TASK_ID, project: $PROJECT_DIR"
 
 # ── Discover accounts ──────────────────────────────────────────────────────────

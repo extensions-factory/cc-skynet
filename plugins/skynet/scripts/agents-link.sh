@@ -2,13 +2,14 @@
 # Symlink agents from everything-claude-code to .claude/agents/ based on skynet.json
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/log-common.sh"
+
 ECC_DIR="$HOME/.claude/skills-cache/everything-claude-code"
 PROJECT_CONFIG=".claude/skynet.json"
 AGENTS_DIR=".claude/agents"
-LOG="$HOME/.claude/logs/skynet-skills.log"
-
-mkdir -p "$(dirname "$LOG")"
-log() { echo "[$(date '+%H:%M:%S')] [agents-link] $*" >> "$LOG"; }
+skynet_init_log
+log() { skynet_log "agents-link" "$*"; }
 
 log "start — cwd: $(pwd)"
 

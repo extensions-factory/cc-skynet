@@ -17,6 +17,10 @@
 # Exit codes: 0=SUCCESS, 1=FAILED, 2=TIMEOUT, 3=NEEDS_CLARIFICATION
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/log-common.sh"
+skynet_init_log
+
 # ── Mode detection ─────────────────────────────────────────────────────────────
 MODE="run"
 if [ "${1:-}" = "--answer" ]; then
@@ -41,11 +45,10 @@ STATUS_FILE="$PIPE_DIR/${TASK_ID}.status"
 QUESTION_FILE="$PIPE_DIR/${TASK_ID}.question"
 ANSWER_FILE="$PIPE_DIR/${TASK_ID}.answer"
 STATE_FILE="$PIPE_DIR/${TASK_ID}.state"
-LOG="$HOME/.claude/logs/skynet-skills.log"
 
-mkdir -p "$PIPE_DIR" "$OUTPUT_DIR" "$(dirname "$LOG")"
+mkdir -p "$PIPE_DIR" "$OUTPUT_DIR" "$LOG_DIR"
 
-log() { echo "[$(date '+%H:%M:%S')] [claude-worker] $*" >> "$LOG"; }
+log() { skynet_log "claude-worker" "$*"; }
 
 # ── Shared: wait for signal with optional timeout ──────────────────────────────
 wait_for_signal() {

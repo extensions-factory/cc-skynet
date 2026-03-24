@@ -2,9 +2,14 @@
 # Fetch or update all skills/agents repositories
 set -euo pipefail
 
-LOG="$HOME/.claude/logs/skynet-skills.log"
-mkdir -p "$(dirname "$LOG")"
-log() { echo "[$(date '+%H:%M:%S')] [skills-fetch] $*" | tee -a "$LOG"; }
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/log-common.sh"
+skynet_init_log
+log() {
+  local message="[$(date '+%H:%M:%S')] [skills-fetch] $*"
+  echo "$message"
+  echo "$message" >> "$LOG" 2>/dev/null || true
+}
 
 # ── Repo 1: antigravity-awesome-skills ────────────────────────────────────────
 ANTIGRAVITY_DIR="$HOME/.claude/skills-cache/antigravity-awesome-skills"

@@ -3,15 +3,15 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/log-common.sh"
+
 PLUGIN_ROOT="$SCRIPT_DIR/.."
 RULES_SRC="$PLUGIN_ROOT/rules"
 PROJECT_ROOT=$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)
 RULES_DEST="$PROJECT_ROOT/.claude/rules"
 VERSION_FILE="$RULES_DEST/.skynet-version"
-LOG="$HOME/.claude/logs/skynet-skills.log"
-
-mkdir -p "$(dirname "$LOG")"
-log() { echo "[$(date '+%H:%M:%S')] [auto-update] $*" >> "$LOG"; }
+skynet_init_log
+log() { skynet_log "auto-update" "$*"; }
 
 log "start — cwd: $(pwd)"
 

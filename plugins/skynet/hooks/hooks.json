@@ -10,19 +10,19 @@
           },
           {
             "type": "command",
-            "command": "script=$(ls \"$HOME/.claude/plugins/cache/cc-skynet/skynet/\"*/scripts/setup-cron.sh 2>/dev/null | tail -1) && [ -n \"$script\" ] && bash \"$script\" || true"
+            "command": "latest=$(ls -1 \"$HOME/.claude/plugins/cache/cc-skynet/skynet\" 2>/dev/null | sort -V | tail -1); script=\"$HOME/.claude/plugins/cache/cc-skynet/skynet/$latest/scripts/setup-cron.sh\"; [ -n \"$latest\" ] && [ -f \"$script\" ] && bash \"$script\" || true"
           },
           {
             "type": "command",
-            "command": "script=$(ls \"$HOME/.claude/plugins/cache/cc-skynet/skynet/\"*/scripts/auto-update.sh 2>/dev/null | sort | tail -1) && [ -n \"$script\" ] && bash \"$script\" || true"
+            "command": "latest=$(ls -1 \"$HOME/.claude/plugins/cache/cc-skynet/skynet\" 2>/dev/null | sort -V | tail -1); script=\"$HOME/.claude/plugins/cache/cc-skynet/skynet/$latest/scripts/auto-update.sh\"; [ -n \"$latest\" ] && [ -f \"$script\" ] && bash \"$script\" || true"
           },
           {
             "type": "command",
-            "command": "script=$(ls \"$HOME/.claude/plugins/cache/cc-skynet/skynet/\"*/scripts/skills-link.sh 2>/dev/null | sort | tail -1) && [ -n \"$script\" ] && bash \"$script\" || true"
+            "command": "latest=$(ls -1 \"$HOME/.claude/plugins/cache/cc-skynet/skynet\" 2>/dev/null | sort -V | tail -1); script=\"$HOME/.claude/plugins/cache/cc-skynet/skynet/$latest/scripts/skills-link.sh\"; [ -n \"$latest\" ] && [ -f \"$script\" ] && bash \"$script\" || true"
           },
           {
             "type": "command",
-            "command": "script=$(ls \"$HOME/.claude/plugins/cache/cc-skynet/skynet/\"*/scripts/agents-link.sh 2>/dev/null | sort | tail -1) && [ -n \"$script\" ] && bash \"$script\" || true"
+            "command": "latest=$(ls -1 \"$HOME/.claude/plugins/cache/cc-skynet/skynet\" 2>/dev/null | sort -V | tail -1); script=\"$HOME/.claude/plugins/cache/cc-skynet/skynet/$latest/scripts/agents-link.sh\"; [ -n \"$latest\" ] && [ -f \"$script\" ] && bash \"$script\" || true"
           },
           {
             "type": "command",
