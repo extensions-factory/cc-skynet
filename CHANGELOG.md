@@ -6,6 +6,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-03-24
+
+### Changed
+
+- Split `commit.md` into two rules: `commit.md` (commit-time version bump) and `build-counter.md` (in-session iteration tracking) — build counter now active throughout session instead of only at commit time
+
 ## [0.9.1] - 2026-03-24
 
 ### Changed
