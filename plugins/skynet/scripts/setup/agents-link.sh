@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/log-common.sh"
+source "$SCRIPT_DIR/../lib/log-common.sh"
 
 ECC_DIR="$HOME/.claude/skills-cache/everything-claude-code"
 PROJECT_CONFIG=".claude/skynet.json"

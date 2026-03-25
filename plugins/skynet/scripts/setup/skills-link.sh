@@ -4,7 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/log-common.sh"
+source "$SCRIPT_DIR/../lib/log-common.sh"
 
 CACHE_DIR="$HOME/.claude/skills-cache/antigravity-awesome-skills"
 INDEX="$CACHE_DIR/skills_index.json"

@@ -27,14 +27,14 @@ You are the bridge between the orchestrator and external Gemini CLI. The orchest
 # Step 1 — Create task brief
 latest=$(ls -1 ~/.claude/plugins/cache/cc-skynet/skynet 2>/dev/null | sort -V | tail -1)
 SCRIPT_DIR="$HOME/.claude/plugins/cache/cc-skynet/skynet/$latest/scripts"
-TASK_FILE=$(bash "$SCRIPT_DIR/create-task.sh" "task-id" "Task title" <<'EOF'
+TASK_FILE=$(bash "$SCRIPT_DIR/spawn/create-task.sh" "task-id" "Task title" <<'EOF'
 Full task instructions here...
 EOF
 )
 
 # Step 2 — Spawn Gemini CLI worker
 # Round-robin accounts, auto failover on 429, no timeout by default
-bash "$SCRIPT_DIR/spawn-gemini-worker.sh" "$TASK_FILE"
+bash "$SCRIPT_DIR/spawn/spawn-gemini-worker.sh" "$TASK_FILE"
 
 # Step 3 — Output is printed to stdout on SUCCESS
 # Also saved to: tasks/.output/task-{id}.md

@@ -6,7 +6,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/log-common.sh"
+source "$SCRIPT_DIR/../lib/log-common.sh"
 skynet_init_log
 log() { skynet_log "create-task" "$*"; }
 

@@ -27,13 +27,13 @@ You are the bridge between the orchestrator and external Codex CLI (OpenAI). The
 # Step 1 — Create task brief
 latest=$(ls -1 ~/.claude/plugins/cache/cc-skynet/skynet 2>/dev/null | sort -V | tail -1)
 SCRIPT_DIR="$HOME/.claude/plugins/cache/cc-skynet/skynet/$latest/scripts"
-TASK_FILE=$(bash "$SCRIPT_DIR/create-task.sh" "task-id" "Task title" <<'EOF'
+TASK_FILE=$(bash "$SCRIPT_DIR/spawn/create-task.sh" "task-id" "Task title" <<'EOF'
 Full task instructions here...
 EOF
 )
 
 # Step 2 — Spawn external Codex worker
-bash "$SCRIPT_DIR/spawn-codex-worker.sh" "$TASK_FILE"
+bash "$SCRIPT_DIR/spawn/spawn-codex-worker.sh" "$TASK_FILE"
 EC=$?
 
 # Output is printed to stdout on SUCCESS

@@ -28,7 +28,7 @@ You are the bridge between the orchestrator and external Claude Code CLI instanc
 # Step 1 — Create task brief
 latest=$(ls -1 ~/.claude/plugins/cache/cc-skynet/skynet 2>/dev/null | sort -V | tail -1)
 SCRIPT_DIR="$HOME/.claude/plugins/cache/cc-skynet/skynet/$latest/scripts"
-TASK_FILE=$(bash "$SCRIPT_DIR/create-task.sh" "task-id" "Task title" <<'EOF'
+TASK_FILE=$(bash "$SCRIPT_DIR/spawn/create-task.sh" "task-id" "Task title" <<'EOF'
 Full task instructions here...
 
 ## Output Format
@@ -39,14 +39,14 @@ EOF
 )
 
 # Step 2 — Spawn external Claude worker
-bash "$SCRIPT_DIR/spawn-claude-worker.sh" "$TASK_FILE"
+bash "$SCRIPT_DIR/spawn/spawn-claude-worker.sh" "$TASK_FILE"
 EC=$?
 
 # Step 3 — Handle Q&A if needed (exit code 3)
 if [ $EC -eq 3 ]; then
   # Read question from tasks/.pipe/task-{id}.question
   # Report to orchestrator, get answer, then:
-  bash "$SCRIPT_DIR/spawn-claude-worker.sh" --answer "$TASK_FILE" <<< "answer text"
+  bash "$SCRIPT_DIR/spawn/spawn-claude-worker.sh" --answer "$TASK_FILE" <<< "answer text"
 fi
 
 # Output is printed to stdout on SUCCESS

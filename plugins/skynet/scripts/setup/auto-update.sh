@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/log-common.sh"
+source "$SCRIPT_DIR/../lib/log-common.sh"
 
 PLUGIN_ROOT="$SCRIPT_DIR/.."
 RULES_SRC="$PLUGIN_ROOT/rules"
