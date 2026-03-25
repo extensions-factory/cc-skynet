@@ -2,7 +2,7 @@
 name: worker-claude
 description: Delegate coding, reasoning, and review tasks to a Claude worker.
   Use for coding, reasoning, and review tasks when the orchestrator selects Claude for the lane.
-tools: Bash, Read, Write, Edit, Grep, Glob
+tools: Bash, Read
 model: sonnet
 ---
 

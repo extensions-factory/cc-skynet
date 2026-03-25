@@ -2,7 +2,7 @@
 name: worker-gemini
 description: Delegate research, analysis, and documentation tasks to a Gemini worker.
   Use for web research, document analysis, summarization, data processing, comparisons.
-tools: Bash, Read, WebSearch, WebFetch
+tools: Bash, Read
 model: sonnet
 ---
 

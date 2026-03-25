@@ -2,7 +2,7 @@
 name: worker-codex
 description: Delegate coding tasks to a Codex worker (OpenAI).
   Use for coding tasks when the orchestrator selects Codex for execution or review.
-tools: Bash, Read, Write, Edit, Grep, Glob
+tools: Bash, Read
 model: sonnet
 ---
 
