@@ -1,0 +1,34 @@
+{
+  "hooks": {
+    "SessionStart": [],
+    "InstructionsLoaded": [],
+    "SessionEnd": [],
+
+    "UserPromptSubmit": [],
+    "Elicitation": [],
+    "ElicitationResult": [],
+
+    "PreToolUse": [],
+    "PostToolUse": [],
+    "PostToolUseFailure": [],
+    "PermissionRequest": [],
+
+    "SubagentStart": [],
+    "SubagentStop": [],
+    "TeammateIdle": [],
+    "TaskCompleted": [],
+
+    "Stop": [],
+    "StopFailure": [],
+
+    "WorktreeCreate": [],
+    "WorktreeRemove": [],
+
+    "ConfigChange": [],
+
+    "PreCompact": [],
+    "PostCompact": [],
+
+    "Notification": []
+  }
+}

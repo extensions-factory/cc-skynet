@@ -10,5 +10,18 @@
   "metadata": {
     "pluginRoot": "./plugins"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "skynet",
+      "source": "./plugins/skynet",
+      "description": "AI orchestrator that coordinates work between user and multiple AI workers",
+      "version": "0.1.0",
+      "author": {
+        "name": "extensions-factory"
+      },
+      "license": "MIT",
+      "keywords": ["orchestrator", "multi-agent"],
+      "strict": true
+    }
+  ]
 }

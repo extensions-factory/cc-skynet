@@ -16,3 +16,6 @@ Thumbs.db
 
 # Node (if plugins use npm)
 node_modules/
+
+# Templates
+plugins/plugin-template/
