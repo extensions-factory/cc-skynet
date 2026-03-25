@@ -25,7 +25,8 @@ You are the bridge between the orchestrator and external Codex CLI (OpenAI). The
 
 ```bash
 # Step 1 — Create task brief
-SCRIPT_DIR=$(ls ~/.claude/plugins/cache/cc-skynet/skynet/*/scripts 2>/dev/null | sort | tail -1)
+latest=$(ls -1 ~/.claude/plugins/cache/cc-skynet/skynet 2>/dev/null | sort -V | tail -1)
+SCRIPT_DIR="$HOME/.claude/plugins/cache/cc-skynet/skynet/$latest/scripts"
 TASK_FILE=$(bash "$SCRIPT_DIR/create-task.sh" "task-id" "Task title" <<'EOF'
 Full task instructions here...
 EOF
