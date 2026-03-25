@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/log-common.sh"
 skynet_init_log
 log() {
-  local message="[$(date '+%H:%M:%S')] [skills-fetch] $*"
+  local message="[$(date '+%H:%M:%S')] [external-libs-fetch] $*"
   echo "$message"
   echo "$message" >> "$LOG" 2>/dev/null || true
 }

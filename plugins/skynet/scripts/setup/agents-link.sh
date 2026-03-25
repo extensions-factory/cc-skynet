@@ -14,7 +14,7 @@ log() { skynet_log "agents-link" "$*"; }
 log "start — cwd: $(pwd)"
 
 [ -f "$PROJECT_CONFIG" ] || { log "no $PROJECT_CONFIG — skip"; exit 0; }
-[ -d "$ECC_DIR/agents" ] || { log "ecc agents not cached — skip (run skills-fetch first)"; exit 0; }
+[ -d "$ECC_DIR/agents" ] || { log "ecc agents not cached — skip (run external-libs-fetch first)"; exit 0; }
 
 # Read requested agents list from skynet.json
 agents=$(jq -r '.agents[]?' "$PROJECT_CONFIG" 2>/dev/null)

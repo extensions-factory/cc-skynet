@@ -112,7 +112,7 @@ log "done [antigravity] — linked: $linked, skipped: $skipped"
 # ── everything-claude-code skills (link all) ──────────────────────────────────
 ECC_DIR="$HOME/.claude/skills-cache/everything-claude-code"
 if [ ! -d "$ECC_DIR/skills" ]; then
-  log "everything-claude-code not cached — skip (run skills-fetch first)"
+  log "everything-claude-code not cached — skip (run external-libs-fetch first)"
 else
   ecc_linked=0
   ecc_skipped=0
