@@ -26,15 +26,22 @@
           },
           {
             "type": "command",
-            "command": "if [ -d .claude/rules ]; then for f in .claude/rules/*.md; do [ -f \"$f\" ] && printf '\\n---\\n' && cat \"$f\"; done; fi"
-          },
-          {
-            "type": "command",
-            "command": "printf 'Greet the user as Skynet — the AI orchestrator at first response. One line only: [SKYNET] Online và Sẵn sàng phục vụ'"
+            "command": "awk '/@hook:SessionStart:greeting/,/@end:SessionStart:greeting/' .claude/rules/orchestrator.md 2>/dev/null | grep -v '@hook:\\|@end:' || true"
           },
           {
             "type": "command",
             "command": "latest=$(ls -1 \"$HOME/.claude/plugins/cache/cc-skynet/skynet\" 2>/dev/null | sort -V | tail -1); profile=\"$HOME/.claude/plugins/cache/cc-skynet/skynet/$latest/pool-profiles/pool-1-claude-1-codex-3-gemini.md\"; [ -n \"$latest\" ] && [ -f \"$profile\" ] && printf '\\n---\\n' && cat \"$profile\" || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); PROMPT=$(echo \"$INPUT\" | jq -r '.prompt // empty' | tr 'A-Z' 'a-z'); case \"$PROMPT\" in *commit*) awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' .claude/rules/commit.md 2>/dev/null | grep -v '@hook:\\|@end:';; esac; true"
           }
         ]
       }
@@ -45,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '⚠️ STOP: Do NOT edit/write files directly for task work. ALL implementation MUST go through workers + spawn scripts. Rules: .claude/rules/delegation.md'"
+            "command": "awk '/@hook:PreToolUse:Edit\\|Write/,/@end:PreToolUse:Edit\\|Write/' .claude/rules/delegation.md 2>/dev/null | grep -v '@hook:\\|@end:' || true"
           }
         ]
       },
@@ -54,7 +61,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); case \"$CMD\" in *spawn-*-worker*|*create-task*|*skills-link*|*skills-fetch*|*agents-link*|*setup-cron*|*auto-update*|*log-common*) ;; *\"tasks/.output\"*|*\"tasks/.pipe\"*|*SCRIPT_DIR*|*\"plugins/cache/cc-skynet\"*) ;; *) echo '⚠️ CHECK: Only orchestration commands (git, ls, status) allowed directly. Implementation MUST go through workers + spawn scripts. Rules: .claude/rules/delegation.md' ;; esac"
+            "command": "INPUT=$(cat); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); case \"$CMD\" in *spawn-*-worker*|*create-task*|*skills-link*|*skills-fetch*|*agents-link*|*setup-cron*|*auto-update*|*log-common*) ;; *\"tasks/.output\"*|*\"tasks/.pipe\"*|*SCRIPT_DIR*|*\"plugins/cache/cc-skynet\"*) ;; *) awk '/@hook:PreToolUse:Bash/,/@end:PreToolUse:Bash/' .claude/rules/delegation.md 2>/dev/null | grep -v '@hook:\\|@end:' ;; esac; true"
           }
         ]
       },
@@ -63,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '📋 DELEGATE: Worker MUST use create-task.sh + spawn-*-worker.sh for ALL execution. No internal tool fallback. Rules: .claude/rules/delegation.md'"
+            "command": "awk '/@hook:PreToolUse:Agent/,/@end:PreToolUse:Agent/' .claude/rules/delegation.md 2>/dev/null | grep -v '@hook:\\|@end:'; awk '/@hook:PreToolUse:Agent/,/@end:PreToolUse:Agent/' .claude/rules/skill-triggers.md 2>/dev/null | grep -v '@hook:\\|@end:'; true"
           }
         ]
       },
@@ -72,7 +79,29 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); CHECK=\"$FILE $CMD\"; case \"$CHECK\" in *\"/.env\"*|*\"/.env.\"*|*\".credentials\"*|*\"docker-compose.prod.yml\"*) echo \"BLOCKED: protected file detected in '$FILE$CMD'. Edit it manually.\" >&2; exit 2;; esac"
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); CHECK=\"$FILE $CMD\"; case \"$CHECK\" in *\"/.env\"*|*\"/.env.\"*|*\".credentials\"*|*\"docker-compose.prod.yml\"*) awk '/@hook:PreToolUse:protected-files/,/@end:PreToolUse:protected-files/' .claude/rules/orchestrator.md 2>/dev/null | grep -v '@hook:\\|@end:' >&2; exit 2;; esac"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "awk '/@hook:SubagentStop/,/@end:SubagentStop/' .claude/rules/delegation.md 2>/dev/null | grep -v '@hook:\\|@end:'; awk '/@hook:SubagentStop/,/@end:SubagentStop/' .claude/rules/build-counter.md 2>/dev/null | grep -v '@hook:\\|@end:'; true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "awk '/@hook:Stop/,/@end:Stop/' .claude/rules/orchestrator.md 2>/dev/null | grep -v '@hook:\\|@end:' || true"
           }
         ]
       }

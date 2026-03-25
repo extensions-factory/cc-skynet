@@ -11,5 +11,7 @@ skynet_log() {
   local tag="$1"
   shift
   skynet_init_log
+  [ -n "${LOG:-}" ] || return 0
+  [ -w "$LOG_DIR" ] || return 0
   echo "[$(date '+%H:%M:%S')] [$tag] $*" >> "$LOG" 2>/dev/null || true
 }

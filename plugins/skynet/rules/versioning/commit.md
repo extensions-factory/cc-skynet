@@ -1,5 +1,6 @@
 # Commit Rules
 
+<!-- @hook:UserPromptSubmit -->
 When the user asks to commit, review the change scope first, then bump version if the project uses versioned artifacts.
 
 ## Version Bump
@@ -35,3 +36,4 @@ Search with a targeted command such as `rg -n '"version"'`.
 - Keep related version files in sync; do not blindly edit unrelated manifests
 - State the bump type and new version in the commit message when a version bump is applied
 - If bump type is ambiguous, choose the lower bump and ask before committing
+<!-- @end:UserPromptSubmit -->

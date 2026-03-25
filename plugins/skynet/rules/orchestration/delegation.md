@@ -78,6 +78,19 @@ Does it require both coding and research?
 - Do not idle Gemini capacity during research-heavy work if parallel tracks exist.
 - Do not start two coding lanes unless file ownership and acceptance criteria are clearly separable.
 
+<!-- @hook:PreToolUse:Edit|Write -->
+## Direct Edit Restriction
+
+Do NOT edit/write files directly for task work. ALL implementation MUST go through workers + spawn scripts. See Delegation Mechanism below.
+<!-- @end:PreToolUse:Edit|Write -->
+
+<!-- @hook:PreToolUse:Bash -->
+## Command Restriction
+
+Only orchestration commands (git, ls, status) allowed directly. Implementation MUST go through workers + spawn scripts. See Delegation Mechanism below.
+<!-- @end:PreToolUse:Bash -->
+
+<!-- @hook:PreToolUse:Agent -->
 ## Delegation Mechanism
 
 **Workers MUST delegate ALL execution work to external CLI instances via spawn scripts. No exceptions.**
@@ -85,7 +98,7 @@ Does it require both coding and research?
 The execution path is:
 
 ```
-Orchestrator → Agent tool (worker subagent) → Bash → spawn script → external CLI (tmux) → results via .pipe/ + .output/
+Orchestrator -> Agent tool (worker subagent) -> Bash -> spawn script -> external CLI (tmux) -> results via .pipe/ + .output/
 ```
 
 ### Mandatory Rules
@@ -143,6 +156,7 @@ ROLE: [role for this task]
 4. Include enough context for good decisions, not the whole conversation.
 5. Keep scope boundaries clear.
 6. When parallelizing, state why this lane is independent from the others.
+<!-- @end:PreToolUse:Agent -->
 
 ## Parallel vs Sequential
 
@@ -204,6 +218,7 @@ When delegating sequentially, synthesize the useful result from the first worker
    - bounded execution lane blocked -> move only the necessary remainder to the stronger reasoning lane
    - Gemini blocked -> narrow scope and continue with the highest-signal source
 
+<!-- @hook:SubagentStop -->
 ## Result Handling
 
 When a worker returns:
@@ -213,6 +228,22 @@ When a worker returns:
 - `QUALITY_FAILED`: retry with concrete feedback, up to 2 retries
 - `BLOCKED`: resolve simple environmental blockers if possible; otherwise report the blocker and options
 - `UNRECOVERABLE`: stop and escalate to the user
+
+## Reporting
+
+After a delegated step completes, report:
+
+```markdown
+### [Task Name]
+**Worker:** [worker name]
+**Status:** SUCCESS / FAILED / BLOCKED / ...
+**Summary:** [1-2 sentences]
+**Files changed:** [list if applicable]
+**Next:** [next action]
+```
+
+Keep reports concise and action-oriented.
+<!-- @end:SubagentStop -->
 
 ## Context Passing
 
@@ -236,18 +267,3 @@ Do not include:
 | Small | Delegate directly if useful; otherwise handle inline |
 | Medium | Present a short plan, then execute or delegate |
 | Large | Break into phases, confirm the plan, then execute phase by phase |
-
-## Reporting
-
-After a delegated step completes, report:
-
-```markdown
-### [Task Name]
-**Worker:** [worker name]
-**Status:** SUCCESS / FAILED / BLOCKED / ...
-**Summary:** [1-2 sentences]
-**Files changed:** [list if applicable]
-**Next:** [next action]
-```
-
-Keep reports concise and action-oriented.

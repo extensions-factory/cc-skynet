@@ -19,6 +19,7 @@ Thumbs.db
 .claude/rules/
 .claude/skills/
 .claude/skynet.json
+.claude/.skynet-version
 .gemini/
 .codex/
 

@@ -1,5 +1,6 @@
 # Build Counter
 
+<!-- @hook:SubagentStop -->
 Use a build counter suffix only when it helps track testable iterations across versioned artifacts.
 
 ## How it works
@@ -30,3 +31,4 @@ Examples:
 - Use the same release-related version files identified by the commit rules
 - Keep those files in sync if a build counter is used
 - Do not introduce a build counter into unrelated manifests just because they contain a `version` field
+<!-- @end:SubagentStop -->

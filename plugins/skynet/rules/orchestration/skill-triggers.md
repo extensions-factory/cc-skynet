@@ -1,5 +1,6 @@
 # Skill Triggers
 
+<!-- @hook:PreToolUse:Agent -->
 Use skills to sharpen execution, not to add ceremony.
 
 ## Core Rule
@@ -78,3 +79,4 @@ Suggestions are optional guidance, not mandatory steps.
 3. Do not suggest skills the target worker cannot use.
 4. If skill availability is unknown, prefer skipping over guessing.
 5. Skills should reduce ambiguity or improve quality. If they do neither, omit them.
+<!-- @end:PreToolUse:Agent -->
