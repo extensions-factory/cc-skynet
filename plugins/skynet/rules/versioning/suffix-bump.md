@@ -1,9 +1,8 @@
-<!-- @hook:Stop -->
-Before finishing any session that modified files in the project, ensure the suffix version has been bumped.
+<!-- @hook:UserPromptSubmit -->
+MANDATORY: If you modified any files during this session and have not yet bumped the suffix version, do it before responding:
+- `X.Y.Z` → `X.Y.Z-1`, `X.Y.Z-1` → `X.Y.Z-2`, etc.
+- Files to update: `plugin.json`, `marketplace.json`, and any other version-declaring files.
+- Do NOT skip. Do NOT defer.
 
-Rule:
-- Every change, no matter how small, MUST bump the suffix version: `X.Y.Z-1` → `X.Y.Z-2` → `X.Y.Z-3` ...
-- Find ALL files in the project that declare a version (e.g. `package.json`, `plugin.json`, `marketplace.json`, `pyproject.toml`, `Cargo.toml`, etc.) and bump them consistently.
-- This ensures testers can verify the exact latest version is installed.
-- If no files were changed, no bump is needed.
-<!-- @end:Stop -->
+If no files were modified, no bump needed.
+<!-- @end:UserPromptSubmit -->
