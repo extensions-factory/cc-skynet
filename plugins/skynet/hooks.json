@@ -9,7 +9,12 @@
     "InstructionsLoaded": [],
     "SessionEnd": [],
 
-    "UserPromptSubmit": [],
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": "PLUGIN_DIR=$(awk '/skynet@cc-skynet/,/installPath/' \"$HOME/.claude/plugins/installed_plugins.json\" | grep installPath | sed 's/.*\"installPath\": *\"\\([^\"]*\\)\".*/\\1/') && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/versioning/auto-bump-before-commit.md\""
+      }
+    ],
     "Elicitation": [],
     "ElicitationResult": [],
 
@@ -23,7 +28,12 @@
     "TeammateIdle": [],
     "TaskCompleted": [],
 
-    "Stop": [],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "PLUGIN_DIR=$(awk '/skynet@cc-skynet/,/installPath/' \"$HOME/.claude/plugins/installed_plugins.json\" | grep installPath | sed 's/.*\"installPath\": *\"\\([^\"]*\\)\".*/\\1/') && awk '/@hook:Stop/,/@end:Stop/' \"$PLUGIN_DIR/rules/versioning/suffix-bump.md\""
+      }
+    ],
     "StopFailure": [],
 
     "WorktreeCreate": [],
