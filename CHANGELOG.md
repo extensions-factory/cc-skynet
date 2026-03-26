@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.6.1] - 2026-03-26
+
+### Added
+
+- `sync-prerequisites` rule — auto-update `prerequisites.json` and README when new dependencies are introduced
+
 ## [0.6.0] - 2026-03-26
 
 ### Added
