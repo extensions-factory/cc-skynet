@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.6.0] - 2026-03-26
+
+### Added
+
+- `skynet` CLI with `doctor`, `version`, `help` commands
+- `prerequisites.json` — declarative dependency manifest for doctor checks
+- `lib/common.sh` — shared utilities (colors, logging, platform detection, JSON helpers)
+- `bin/setup.sh` — auto-symlink `skynet` CLI to `~/.local/bin`
+- SessionStart hook: auto-run setup on first use or after plugin update
+- README: prerequisites table, installation guide, CLI reference
+
 ## [0.5.2] - 2026-03-26
 
 ### Added

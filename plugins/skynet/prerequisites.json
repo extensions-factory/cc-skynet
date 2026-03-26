@@ -1,0 +1,44 @@
+{
+  "prerequisites": [
+    {
+      "name": "python3",
+      "command": "python3 --version",
+      "required": true,
+      "description": "Python 3 runtime (used by plugin hooks)",
+      "install": {
+        "darwin": "brew install python3",
+        "linux": "sudo apt install python3"
+      }
+    },
+    {
+      "name": "jq",
+      "command": "jq --version",
+      "required": true,
+      "description": "JSON query tool",
+      "install": {
+        "darwin": "brew install jq",
+        "linux": "sudo apt install jq"
+      }
+    },
+    {
+      "name": "curl",
+      "command": "curl --version",
+      "required": true,
+      "description": "HTTP client",
+      "install": {
+        "darwin": "brew install curl",
+        "linux": "sudo apt install curl"
+      }
+    },
+    {
+      "name": "claude",
+      "command": "claude --version",
+      "required": true,
+      "description": "Claude Code CLI",
+      "install": {
+        "darwin": "npm install -g @anthropic-ai/claude-code",
+        "linux": "npm install -g @anthropic-ai/claude-code"
+      }
+    }
+  ]
+}
