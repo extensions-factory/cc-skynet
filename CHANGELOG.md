@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.5.2] - 2026-03-26
+
+### Added
+
+- README with installation instructions and quick-start guide
+
 ## [0.5.1] - 2026-03-26
 
 ### Added
