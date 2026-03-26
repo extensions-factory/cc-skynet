@@ -1,6 +1,11 @@
 {
   "hooks": {
-    "SessionStart": [],
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "PLUGIN_DIR=$(awk '/skynet@cc-skynet/,/installPath/' \"$HOME/.claude/plugins/installed_plugins.json\" | grep installPath | sed 's/.*\"installPath\": *\"\\([^\"]*\\)\".*/\\1/') && awk '/@hook:SessionStart/,/@end:SessionStart/' \"$PLUGIN_DIR/rules/session/greet.md\""
+      }
+    ],
     "InstructionsLoaded": [],
     "SessionEnd": [],
 
