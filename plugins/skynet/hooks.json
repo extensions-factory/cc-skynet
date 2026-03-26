@@ -6,6 +6,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:SessionStart/,/@end:SessionStart/' \"$PLUGIN_DIR/rules/core/user-priority.md\" | grep -v '@hook:\\|@end:'"
+          },
+          {
+            "type": "command",
             "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:SessionStart/,/@end:SessionStart/' \"$PLUGIN_DIR/rules/session/greet.md\" | grep -v '@hook:\\|@end:'"
           }
         ]
@@ -18,6 +22,10 @@
       {
         "matcher": "",
         "hooks": [
+          {
+            "type": "command",
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/core/user-priority.md\" | grep -v '@hook:\\|@end:'"
+          },
           {
             "type": "command",
             "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/versioning/auto-bump-before-commit.md\" | grep -v '@hook:\\|@end:'"
