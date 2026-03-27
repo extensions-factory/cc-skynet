@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.0] - 2026-03-27
+
+### Added
+
+- Agent initialization section — auto-resolves plugin install path and loads all rule files on startup
+- Embedded operational rules in agent definition (user-priority, suffix-bump, commit workflow, footer usage)
+- `settings.json` — declares default agent for the plugin
+
+### Changed
+
+- Agent delegation rules section restructured for clarity
+
 ## [0.7.1] - 2026-03-27
 
 ### Changed
