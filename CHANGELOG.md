@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.11.0] - 2026-03-27
+
+### Added
+
+- `genisys` CLI — worker management with `add`, `remove`, `list` commands
+- Worker CRUD in `lib/workers.sh` — `worker_add`, `worker_remove`, `worker_list`, `worker_get`, `worker_exists`, `worker_count` with atomic JSON writes
+- Provider-specific credential handling: Claude (OAuth token file), Gemini (service account JSON), Codex (subscription login, no API key)
+- Input validation: kebab-case worker names (max 64 chars), provider validation, duplicate detection
+- Single Codex worker enforcement per machine
+- Auto-init: `genisys add` initializes worker system if not already set up
+- Multi-CLI symlink support in `setup.sh` — refactored with `ensure_symlink()` function for skynet + genisys
+
+### Changed
+
+- `setup.sh` refactored from single-CLI to multi-CLI architecture
+- SessionStart setup hook now checks symlinks for both skynet and genisys
+
+### Fixed
+
+- Codex worker no longer references `OPENAI_API_KEY` — uses subscription-based auth instead
+
 ## [0.10.0] - 2026-03-27
 
 ### Added

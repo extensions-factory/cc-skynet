@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resolve symlinks to find actual script location
+SCRIPT_SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SCRIPT_SOURCE" ]; do
+  SCRIPT_SOURCE="$(readlink "$SCRIPT_SOURCE")"
+done
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
+PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
+
+# shellcheck source=../lib/common.sh
+source "$PLUGIN_DIR/lib/common.sh"
+# shellcheck source=../lib/workers.sh
+source "$PLUGIN_DIR/lib/workers.sh"
+
+usage() {
+  printf "%bgenisys%b — worker management CLI\n" "$BOLD" "$RESET"
+  printf "\n"
+  printf "%bUsage:%b\n" "$BOLD" "$RESET"
+  printf "  genisys <command> [options]\n"
+  printf "\n"
+  printf "%bCommands:%b\n" "$BOLD" "$RESET"
+  printf "  add <name> --provider <claude|gemini|codex> [options]   Register a worker\n"
+  printf "  remove <name>                                          Unregister a worker\n"
+  printf "  list [--json]                                          List all workers\n"
+  printf "  help                                                   Show this help\n"
+  printf "\n"
+  printf "%bAdd options:%b\n" "$BOLD" "$RESET"
+  printf "  --oauth-token <token>         Claude OAuth token\n"
+  printf "  --service-account <path>      Gemini service account JSON\n"
+  printf "\n"
+  printf "%bExamples:%b\n" "$BOLD" "$RESET"
+  printf "  genisys add my-claude --provider claude --oauth-token sk-ant-...\n"
+  printf "  genisys add my-gemini --provider gemini --service-account /path/sa.json\n"
+  printf "  genisys add my-codex --provider codex\n"
+  printf "  genisys list\n"
+  printf "  genisys remove my-claude\n"
+}
+
+# ── add ───────────────────────────────────────────────────
+cmd_add() {
+  local name="${1:-}"
+  [ -z "$name" ] && { fail "Usage: genisys add <name> --provider <provider> [options]"; return 1; }
+  shift
+
+  local provider=""
+  local extra_args=()
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --provider) provider="$2"; shift 2 ;;
+      --oauth-token|--service-account) extra_args+=("$1" "$2"); shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  [ -z "$provider" ] && { fail "Missing --provider. Use: claude, gemini, or codex"; return 1; }
+
+  # Ensure init
+  if ! is_initialized; then
+    info "Worker system not initialized. Running skynet init..."
+    ensure_skynet_home
+    ensure_config || true
+    ensure_workers_registry || true
+  fi
+
+  worker_add "$name" "$provider" "${extra_args[@]+"${extra_args[@]}"}"
+}
+
+# ── remove ────────────────────────────────────────────────
+cmd_remove() {
+  local name="${1:-}"
+  [ -z "$name" ] && { fail "Usage: genisys remove <name>"; return 1; }
+  worker_remove "$name"
+}
+
+# ── list ──────────────────────────────────────────────────
+cmd_list() {
+  if ! is_initialized; then
+    fail "Worker system not initialized. Run: skynet init"
+    return 1
+  fi
+  worker_list "${1:-table}"
+}
+
+# ── Main ──────────────────────────────────────────────────
+case "${1:-help}" in
+  add)    shift; cmd_add "$@" ;;
+  remove) shift; cmd_remove "$@" ;;
+  list)   shift 2>/dev/null || true; cmd_list "${1:-table}" ;;
+  help|--help|-h) usage ;;
+  *)
+    fail "Unknown command: $1"
+    usage
+    exit 1
+    ;;
+esac
