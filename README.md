@@ -50,7 +50,7 @@ claude plugins install skynet@cc-skynet
 3. Start a new Claude Code session with the Skynet agent:
 
 ```bash
-claude --dangerously-skip-permissions "start session" --agent skynet:skynet
+claude --dangerously-skip-permissions "start session"
 ```
 
 4. Verify the boot message. You should see:

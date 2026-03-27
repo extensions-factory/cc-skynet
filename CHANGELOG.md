@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.5] - 2026-03-27
+
+### Fixed
+
+- Agent reference in `settings.json` — use fully qualified `skynet:skynet` instead of `skynet`
+- Simplify README start command by removing redundant `--agent skynet:skynet` flag (now handled by settings.json)
+
 ## [0.8.4] - 2026-03-27
 
 ### Added
