@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.1] - 2026-03-27
+
+### Changed
+
+- Rewrite `skynet.md` agent definition — explicit tool blacklist/whitelist, delegation table with real subagent types, 5-step protocol (Analyze→Decompose→Delegate→Parallelize→Synthesize)
+
+### Removed
+
+- `test-fake` hook from SessionStart (referenced non-existent file)
+- Agent initialization section (redundant with hooks)
+
 ## [0.8.0] - 2026-03-27
 
 ### Added
