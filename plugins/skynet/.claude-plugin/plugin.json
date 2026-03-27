@@ -1,7 +1,7 @@
 {
   "name": "skynet",
   "description": "AI orchestrator that coordinates work between user and multiple AI workers",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "author": {
     "name": "extensions-factory",
     "email": "git@risotech.vn"

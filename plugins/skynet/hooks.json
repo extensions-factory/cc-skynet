@@ -14,7 +14,7 @@
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && STALE=0 && for cli in skynet genisys; do [ -f \"$PLUGIN_DIR/bin/$cli\" ] && { EXPECTED=\"$PLUGIN_DIR/bin/$cli\" && CURRENT=$(readlink \"$HOME/.local/bin/$cli\" 2>/dev/null || echo '') && [ \"$CURRENT\" != \"$EXPECTED\" ] && STALE=1; }; done && if [ \"$STALE\" -eq 1 ]; then bash \"$PLUGIN_DIR/bin/setup.sh\" >/dev/null 2>&1 && echo 'setup hooked' || echo 'setup failed to hook'; else echo 'setup hooked'; fi"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && STALE=0 && for cli in skynet genisys legion; do [ -f \"$PLUGIN_DIR/bin/$cli\" ] && { EXPECTED=\"$PLUGIN_DIR/bin/$cli\" && CURRENT=$(readlink \"$HOME/.local/bin/$cli\" 2>/dev/null || echo '') && [ \"$CURRENT\" = \"$EXPECTED\" ] || STALE=1; }; done && if [ \"$STALE\" -eq 1 ]; then bash \"$PLUGIN_DIR/bin/setup.sh\" >/dev/null 2>&1 && echo 'setup hooked' || echo 'setup failed to hook'; else echo 'setup hooked'; fi"
           },
           {
             "type": "command",

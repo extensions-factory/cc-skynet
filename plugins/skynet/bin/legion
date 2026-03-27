@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resolve symlinks to find actual script location
+SCRIPT_SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SCRIPT_SOURCE" ]; do
+  SCRIPT_SOURCE="$(readlink "$SCRIPT_SOURCE")"
+done
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
+PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
+
+# shellcheck source=../lib/common.sh
+source "$PLUGIN_DIR/lib/common.sh"
+# shellcheck source=../lib/workers.sh
+source "$PLUGIN_DIR/lib/workers.sh"
+# shellcheck source=../lib/tasks.sh
+source "$PLUGIN_DIR/lib/tasks.sh"
+
+usage() {
+  printf "%blegion%b — task execution CLI\n" "$BOLD" "$RESET"
+  printf "\n"
+  printf "%bUsage:%b\n" "$BOLD" "$RESET"
+  printf "  legion <command> [options]\n"
+  printf "\n"
+  printf "%bCommands:%b\n" "$BOLD" "$RESET"
+  printf "  run <prompt> --worker <name> [--print]   Execute a task synchronously\n"
+  printf "  help                                      Show this help\n"
+  printf "\n"
+  printf "%bRun options:%b\n" "$BOLD" "$RESET"
+  printf "  --worker <name>       Worker to execute the task (required)\n"
+  printf "  --print               Print task output to stdout after completion\n"
+  printf "\n"
+  printf "%bExamples:%b\n" "$BOLD" "$RESET"
+  printf "  legion run \"Fix the bug in main.py\" --worker my-claude\n"
+  printf "  legion run \"Refactor auth module\" --worker my-claude --print\n"
+}
+
+# ── run ──────────────────────────────────────────────────
+cmd_run() {
+  local prompt="" worker="" print_output=false
+
+  # Parse arguments
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --worker) worker="$2"; shift 2 ;;
+      --print) print_output=true; shift ;;
+      --*)
+        fail "Unknown option: $1"
+        return 1
+        ;;
+      *)
+        if [ -z "$prompt" ]; then
+          prompt="$1"
+        fi
+        shift
+        ;;
+    esac
+  done
+
+  # Validate required args
+  if [ -z "$prompt" ]; then
+    fail "Missing prompt. Usage: legion run \"<prompt>\" --worker <name>"
+    return 1
+  fi
+  if [ -z "$worker" ]; then
+    fail "Missing --worker. Usage: legion run \"<prompt>\" --worker <name>"
+    return 1
+  fi
+
+  # Validate worker system is initialized
+  if ! is_initialized; then
+    fail "Worker system not initialized. Run: skynet init"
+    return 1
+  fi
+
+  # Auto-check rate limits
+  worker_check_rate_limits
+
+  # Create task
+  info "Creating task for worker: $worker"
+  local task_id
+  task_id=$(task_create "$worker" "$prompt")
+  info "Task created: $task_id"
+
+  # Run task
+  local task_dir
+  task_dir=$(_get_task_dir)
+  info "Executing task..."
+  local exit_code=0
+  task_run_sync "$task_id" || exit_code=$?
+
+  # Print output if requested
+  if [ "$print_output" = true ] && [ -f "$task_dir/$task_id/output.txt" ]; then
+    printf "\n%b── Task Output ──────────────────────────────────%b\n" "$BOLD" "$RESET"
+    task_output "$task_id"
+    printf "\n%b─────────────────────────────────────────────────%b\n" "$BOLD" "$RESET"
+  fi
+
+  # Print summary
+  printf "\n"
+  if [ $exit_code -eq 0 ]; then
+    ok "Task completed: $task_id"
+  else
+    fail "Task failed: $task_id (exit code: $exit_code)"
+    if [ $exit_code -eq 127 ]; then
+      info "Hint: CLI not found. Run: genisys test $worker"
+    fi
+  fi
+  info "Output: $task_dir/$task_id/output.txt"
+
+  return $exit_code
+}
+
+# ── Main ──────────────────────────────────────────────────
+case "${1:-help}" in
+  run)     shift; cmd_run "$@" ;;
+  help|--help|-h) usage ;;
+  *)
+    fail "Unknown command: $1"
+    usage
+    exit 1
+    ;;
+esac

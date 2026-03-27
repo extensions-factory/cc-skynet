@@ -10,7 +10,7 @@ source "$PLUGIN_DIR/lib/common.sh"
 LINK_DIR="$HOME/.local/bin"
 
 # All CLIs to symlink
-CLI_NAMES=("skynet" "genisys")
+CLI_NAMES=("skynet" "genisys" "legion")
 
 # ── Symlink a single CLI ────────────────────────────────
 ensure_symlink() {

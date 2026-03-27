@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.13.0] - 2026-03-27
+
+### Added
+
+- `legion` CLI — task execution CLI: `legion run "<prompt>" --worker <name> [--print]` dispatches tasks synchronously to AI workers
+- `lib/tasks.sh` — task lifecycle management library: `task_create`, `task_update_status`, `task_get`, `task_output`, `task_run_sync`; supports claude, gemini, codex providers with credential injection
+- `tests/tasks.bats` — BATS test suite with 45 test cases covering full task lifecycle (create, update, get, output, run_sync, dispatch routing, credentials)
+
+### Changed
+
+- `setup.sh` — `legion` added to `CLI_NAMES` for automatic symlink management alongside skynet and genisys
+
+### Fixed
+
+- `hooks.json` — setup SessionStart hook for-loop exited 1 when all symlinks were up-to-date, breaking the `&&` chain and silently suppressing `echo 'setup hooked'`; fix: `[ "$CURRENT" != "$EXPECTED" ] && STALE=1` → `[ "$CURRENT" = "$EXPECTED" ] || STALE=1`
+
 ## [0.12.0] - 2026-03-27
 
 ### Added
