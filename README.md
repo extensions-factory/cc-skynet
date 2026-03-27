@@ -1,6 +1,6 @@
 # Skynet -- Claude Code Plugin
 
-**Version 0.8.2** | **License MIT** | **macOS / Linux**
+**Version 0.8.4** | **License MIT** | **macOS / Linux**
 
 AI orchestrator that coordinates work between user and multiple AI workers.
 
@@ -58,6 +58,62 @@ claude --dangerously-skip-permissions "start session" --agent skynet:skynet
 ```
 [SKYNET] Online
 ```
+
+## Manual Setup (Optional)
+
+Most features work automatically on first session start. The `setup` hook creates the CLI symlink, `source-sync` clones external skill repos, and `auto-discover` indexes available skills — all without intervention.
+
+However, for 100% functionality from the start, complete these optional steps after installation:
+
+### 1. Add `~/.local/bin` to PATH
+
+The auto-setup hook creates a symlink at `~/.local/bin/skynet`, but cannot modify your shell profile. Add it manually:
+
+```bash
+# zsh (macOS default)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+
+# bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+```
+
+### 2. Verify prerequisites
+
+```bash
+skynet doctor
+```
+
+This checks all required dependencies (python3, jq, curl, git, claude) and reports any missing ones with install instructions.
+
+### 3. Force-sync external skill sources
+
+By default, sources sync on session start with a 24-hour staleness interval. To sync immediately:
+
+```bash
+skynet source sync --all
+```
+
+This clones/pulls the latest skills from all registered repos (~1400 skills/agents).
+
+### 4. Rebuild the skill index
+
+```bash
+skynet import --index
+```
+
+Builds a compact searchable index for fast `skynet import --search` queries.
+
+### 5. Re-link imported skills (if needed)
+
+If symlinks are broken (e.g., after moving the project):
+
+```bash
+skynet import --sync
+```
+
+Re-creates all symlinks from `.skills-manifest.json`.
+
+> **Skip all of this?** That's fine. The SessionStart hooks handle steps 1-4 automatically — the CLI symlink is created on first session, sources sync when stale, and the index rebuilds after each sync. The only step that truly requires manual action is adding `~/.local/bin` to your PATH.
 
 ## How It Works
 

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.4] - 2026-03-27
+
+### Added
+
+- "Manual Setup (Optional)" section in README — 5-step guide for full plugin setup (PATH config, doctor check, source sync, index build, symlink repair) with note that SessionStart hooks handle most steps automatically
+
 ## [0.8.3] - 2026-03-27
 
 ### Fixed
