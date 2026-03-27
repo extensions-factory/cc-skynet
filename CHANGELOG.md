@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.2] - 2026-03-27
+
+### Changed
+
+- Refactor README.md — comprehensive rewrite with 12 sections: features, architecture overview, hooks reference, external skills, CLI reference, project structure, and cross-platform prerequisites
+
 ## [0.8.1] - 2026-03-27
 
 ### Changed
