@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.12.0] - 2026-03-27
+
+### Added
+
+- Worker lifecycle commands: `genisys pause`, `resume`, `rate-limit`, `test`, `status`
+- Rate-limit TTL with auto-resume — `worker_check_rate_limits()` auto-promotes expired workers
+- `genisys test --all` to test all workers at once
+- `worker_status()` with detailed credential and rate-limit info (never exposes secrets)
+- `worker_available_list()` returns active workers only (used by future F5 round-robin)
+
+### Changed
+
+- Gemini auth uses OAuth credentials file (via `GOOGLE_APPLICATION_CREDENTIALS`) instead of service account
+- Credential flag renamed: `--credentials` replaces `--service-account` (backward compat kept)
+- Registry key `credentials_file` replaces `service_account` for Gemini (reads both for compat)
+
+### Fixed
+
+- Credential filename double-prefix bug: `gemini-gemini-tn.json` → now uses `${name}.json`
+- Same fix for Claude: `claude-my-claude.token` → `${name}.token`
+- Gemini validation no longer checks for `client_email`/`type` (wrong for OAuth creds)
+- `worker_test()` and `worker_remove()` read credential filenames from registry instead of hardcoding
+
 ## [0.11.0] - 2026-03-27
 
 ### Added

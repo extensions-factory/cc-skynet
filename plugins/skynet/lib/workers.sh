@@ -157,7 +157,7 @@ worker_add() {
   while [ $# -gt 0 ]; do
     case "$1" in
       --oauth-token) oauth_token="$2"; shift 2 ;;
-      --service-account) service_account="$2"; shift 2 ;;
+      --service-account|--credentials) service_account="$2"; shift 2 ;;
       *) shift ;;
     esac
   done
@@ -177,15 +177,15 @@ worker_add() {
     claude)
       if [ -n "$oauth_token" ]; then
         # Store token to credential file
-        local token_file="$SKYNET_CREDENTIALS/claude-${name}.token"
+        local token_file="$SKYNET_CREDENTIALS/${name}.token"
         printf '%s' "$oauth_token" > "$token_file"
         chmod 0600 "$token_file"
-        cred_json="{\"token_file\": \"claude-${name}.token\"}"
+        cred_json="{\"token_file\": \"${name}.token\"}"
       elif [ -n "${CLAUDE_OAUTH_TOKEN:-}" ]; then
-        local token_file="$SKYNET_CREDENTIALS/claude-${name}.token"
+        local token_file="$SKYNET_CREDENTIALS/${name}.token"
         printf '%s' "$CLAUDE_OAUTH_TOKEN" > "$token_file"
         chmod 0600 "$token_file"
-        cred_json="{\"token_file\": \"claude-${name}.token\"}"
+        cred_json="{\"token_file\": \"${name}.token\"}"
       else
         warn "No OAuth token provided. Set --oauth-token or CLAUDE_OAUTH_TOKEN env."
         cred_json="{\"token_file\": null}"
@@ -194,17 +194,17 @@ worker_add() {
     gemini)
       if [ -n "$service_account" ]; then
         if [ ! -f "$service_account" ]; then
-          fail "Service account file not found: $service_account"
+          fail "Credentials file not found: $service_account"
           return 1
         fi
         # Copy to credentials dir
-        local sa_file="gemini-${name}.json"
-        cp "$service_account" "$SKYNET_CREDENTIALS/$sa_file"
-        chmod 0600 "$SKYNET_CREDENTIALS/$sa_file"
-        cred_json="{\"service_account\": \"${sa_file}\"}"
+        local cred_file="${name}.json"
+        cp "$service_account" "$SKYNET_CREDENTIALS/$cred_file"
+        chmod 0600 "$SKYNET_CREDENTIALS/$cred_file"
+        cred_json="{\"credentials_file\": \"${cred_file}\"}"
       else
-        warn "No service account provided. Use --service-account <path>."
-        cred_json="{\"service_account\": null}"
+        warn "No credentials file provided. Use --credentials <path> (OAuth JSON from gcloud auth)."
+        cred_json="{\"credentials_file\": null}"
       fi
       ;;
     codex)
@@ -268,15 +268,22 @@ for w in d['workers']:
         break
 ")
 
-  # Remove credential files
-  case "$provider" in
-    claude)
-      rm -f "$SKYNET_CREDENTIALS/claude-${name}.token"
-      ;;
-    gemini)
-      rm -f "$SKYNET_CREDENTIALS/gemini-${name}.json"
-      ;;
-  esac
+  # Remove credential files (read actual filename from registry)
+  local cred_file
+  cred_file=$(_FILE="$SKYNET_WORKERS" _NAME="$name" python3 -c "
+import json, os
+with open(os.environ['_FILE']) as f:
+    d = json.load(f)
+for w in d['workers']:
+    if w['name'] == os.environ['_NAME']:
+        creds = w.get('credentials', {})
+        f = creds.get('token_file') or creds.get('credentials_file') or creds.get('service_account') or ''
+        print(f)
+        break
+")
+  if [ -n "$cred_file" ] && [ "$cred_file" != "None" ]; then
+    rm -f "$SKYNET_CREDENTIALS/$cred_file"
+  fi
 
   # Atomic remove from registry
   local tmp
@@ -336,5 +343,295 @@ import json, os
 with open(os.environ['_FILE']) as f:
     d = json.load(f)
 print(len(d['workers']))
+"
+}
+
+# ── Worker Lifecycle ────────────────────────────────────────
+worker_set_status() {
+  local name="$1" new_status="$2"
+
+  if ! worker_exists "$name"; then
+    fail "Worker not found: $name"
+    return 1
+  fi
+
+  # Validate status
+  local valid
+  local found=false
+  for valid in "${VALID_STATES[@]}"; do
+    [ "$valid" = "$new_status" ] && found=true
+  done
+  if [ "$found" = "false" ]; then
+    fail "Invalid status: $new_status (valid: ${VALID_STATES[*]})"
+    return 1
+  fi
+
+  local tmp
+  tmp="$(mktemp "${SKYNET_WORKERS}.XXXXXX")"
+  _FILE="$SKYNET_WORKERS" _NAME="$name" _STATUS="$new_status" _TMP="$tmp" python3 -c "
+import json, os
+with open(os.environ['_FILE']) as f:
+    d = json.load(f)
+for w in d['workers']:
+    if w['name'] == os.environ['_NAME']:
+        w['status'] = os.environ['_STATUS']
+        if os.environ['_STATUS'] != 'rate_limited':
+            w['rate_limit'] = None
+        break
+with open(os.environ['_TMP'], 'w') as f:
+    json.dump(d, f, indent=2)
+    f.write('\n')
+"
+  mv "$tmp" "$SKYNET_WORKERS"
+}
+
+worker_pause() {
+  local name="$1"
+  worker_set_status "$name" "paused"
+  ok "Paused worker: $name"
+}
+
+worker_resume() {
+  local name="$1"
+  worker_set_status "$name" "active"
+  ok "Resumed worker: $name"
+}
+
+worker_rate_limit() {
+  local name="$1"
+  local duration="${2:-}"
+
+  if ! worker_exists "$name"; then
+    fail "Worker not found: $name"
+    return 1
+  fi
+
+  # Default TTL from config or 300 seconds
+  if [ -z "$duration" ]; then
+    if [ -f "$SKYNET_CONFIG" ]; then
+      duration=$(config_read "rate_limit_ttl_seconds" 2>/dev/null || echo "300")
+    else
+      duration="300"
+    fi
+  fi
+
+  local tmp
+  tmp="$(mktemp "${SKYNET_WORKERS}.XXXXXX")"
+  _FILE="$SKYNET_WORKERS" _NAME="$name" _DUR="$duration" _TMP="$tmp" python3 -c "
+import json, os
+from datetime import datetime, timezone, timedelta
+with open(os.environ['_FILE']) as f:
+    d = json.load(f)
+dur = int(os.environ['_DUR'])
+until = (datetime.now(timezone.utc) + timedelta(seconds=dur)).strftime('%Y-%m-%dT%H:%M:%SZ')
+for w in d['workers']:
+    if w['name'] == os.environ['_NAME']:
+        w['status'] = 'rate_limited'
+        w['rate_limit'] = {'until': until, 'duration_seconds': dur}
+        break
+with open(os.environ['_TMP'], 'w') as f:
+    json.dump(d, f, indent=2)
+    f.write('\n')
+"
+  mv "$tmp" "$SKYNET_WORKERS"
+  ok "Rate-limited worker: $name (${duration}s TTL)"
+}
+
+worker_check_rate_limits() {
+  # Auto-resume workers whose rate_limit TTL has expired
+  if [ ! -f "$SKYNET_WORKERS" ]; then
+    return 0
+  fi
+
+  local tmp
+  tmp="$(mktemp "${SKYNET_WORKERS}.XXXXXX")"
+  local resumed
+  resumed=$(_FILE="$SKYNET_WORKERS" _TMP="$tmp" python3 -c "
+import json, os
+from datetime import datetime, timezone
+with open(os.environ['_FILE']) as f:
+    d = json.load(f)
+now = datetime.now(timezone.utc)
+resumed = []
+for w in d['workers']:
+    if w['status'] == 'rate_limited' and w.get('rate_limit') and w['rate_limit'].get('until'):
+        until = datetime.strptime(w['rate_limit']['until'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        if now >= until:
+            w['status'] = 'active'
+            w['rate_limit'] = None
+            resumed.append(w['name'])
+with open(os.environ['_TMP'], 'w') as f:
+    json.dump(d, f, indent=2)
+    f.write('\n')
+print(','.join(resumed))
+")
+  mv "$tmp" "$SKYNET_WORKERS"
+
+  if [ -n "$resumed" ]; then
+    local IFS=','
+    for name in $resumed; do
+      info "Auto-resumed worker: $name (rate-limit expired)"
+    done
+  fi
+}
+
+worker_test() {
+  local name="$1"
+
+  if ! worker_exists "$name"; then
+    fail "Worker not found: $name"
+    return 1
+  fi
+
+  # Read provider and credential info from registry
+  local worker_info
+  worker_info=$(_FILE="$SKYNET_WORKERS" _NAME="$name" python3 -c "
+import json, os
+with open(os.environ['_FILE']) as f:
+    d = json.load(f)
+for w in d['workers']:
+    if w['name'] == os.environ['_NAME']:
+        creds = w.get('credentials', {})
+        token_file = creds.get('token_file', '')
+        sa_file = creds.get('credentials_file') or creds.get('service_account', '')
+        auth = creds.get('auth', '')
+        print(f\"{w['provider']}|{token_file}|{sa_file}|{auth}\")
+        break
+")
+
+  local provider token_file sa_file auth
+  IFS='|' read -r provider token_file sa_file auth <<< "$worker_info"
+
+  info "Testing worker: $name (provider: $provider)"
+
+  case "$provider" in
+    claude)
+      # Check claude CLI exists
+      if ! command -v claude &>/dev/null; then
+        fail "claude CLI not found"
+        return 1
+      fi
+      ok "claude CLI available"
+      # Check credential file from registry
+      if [ -n "$token_file" ] && [ "$token_file" != "None" ]; then
+        if [ -f "$SKYNET_CREDENTIALS/$token_file" ]; then
+          ok "Credential file exists: $token_file"
+        else
+          warn "Credential file missing: $token_file"
+        fi
+      else
+        warn "No credential configured"
+      fi
+      ;;
+    gemini)
+      # Check credentials file from registry
+      if [ -n "$sa_file" ] && [ "$sa_file" != "None" ]; then
+        local cred_path="$SKYNET_CREDENTIALS/$sa_file"
+        if [ -f "$cred_path" ]; then
+          # Validate it's valid JSON
+          if _FILE="$cred_path" python3 -c "
+import json, os
+with open(os.environ['_FILE']) as f:
+    json.load(f)
+" 2>/dev/null; then
+            ok "Credentials file valid JSON: $sa_file"
+          else
+            fail "Credentials file is not valid JSON: $sa_file"
+            return 1
+          fi
+        else
+          fail "Credentials file not found: $sa_file"
+          return 1
+        fi
+      else
+        fail "No credentials file configured"
+        return 1
+      fi
+      ;;
+    codex)
+      # Check codex CLI exists
+      if command -v codex &>/dev/null; then
+        ok "codex CLI available"
+      else
+        fail "codex CLI not found"
+        return 1
+      fi
+      ;;
+    *)
+      fail "Unknown provider: $provider"
+      return 1
+      ;;
+  esac
+
+  ok "Worker test passed: $name"
+}
+
+worker_status() {
+  local name="$1"
+
+  if ! worker_exists "$name"; then
+    fail "Worker not found: $name"
+    return 1
+  fi
+
+  _FILE="$SKYNET_WORKERS" _NAME="$name" _CRED_DIR="$SKYNET_CREDENTIALS" python3 -c "
+import json, os
+from datetime import datetime, timezone
+
+with open(os.environ['_FILE']) as f:
+    d = json.load(f)
+
+cred_dir = os.environ['_CRED_DIR']
+name = os.environ['_NAME']
+
+for w in d['workers']:
+    if w['name'] == name:
+        print(f\"  Name:       {w['name']}\")
+        print(f\"  Provider:   {w['provider']}\")
+        print(f\"  Status:     {w['status']}\")
+        print(f\"  Created:    {w.get('created_at', 'N/A')}\")
+
+        # Credential info (never show actual values)
+        creds = w.get('credentials', {})
+        if w['provider'] == 'claude':
+            tf = creds.get('token_file')
+            if tf:
+                exists = os.path.isfile(os.path.join(cred_dir, tf))
+                print(f\"  Credential: {tf} ({'found' if exists else 'MISSING'})\")
+            else:
+                print(f\"  Credential: not configured\")
+        elif w['provider'] == 'gemini':
+            cf = creds.get('credentials_file') or creds.get('service_account')
+            if cf:
+                exists = os.path.isfile(os.path.join(cred_dir, cf))
+                print(f\"  Credential: {cf} ({'found' if exists else 'MISSING'})\")
+            else:
+                print(f\"  Credential: not configured\")
+        elif w['provider'] == 'codex':
+            print(f\"  Credential: subscription login\")
+
+        # Rate limit info
+        rl = w.get('rate_limit')
+        if rl and rl.get('until'):
+            until = datetime.strptime(rl['until'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+            now = datetime.now(timezone.utc)
+            if now < until:
+                remaining = int((until - now).total_seconds())
+                print(f\"  Rate limit: {remaining}s remaining (until {rl['until']})\")
+            else:
+                print(f\"  Rate limit: expired (pending auto-resume)\")
+        break
+"
+}
+
+worker_available_list() {
+  # Returns names of active workers, one per line
+  _FILE="$SKYNET_WORKERS" python3 -c "
+import json, os
+with open(os.environ['_FILE']) as f:
+    d = json.load(f)
+for w in d['workers']:
+    if w['status'] == 'active':
+        print(w['name'])
 "
 }

@@ -24,15 +24,20 @@ usage() {
   printf "  add <name> --provider <claude|gemini|codex> [options]   Register a worker\n"
   printf "  remove <name>                                          Unregister a worker\n"
   printf "  list [--json]                                          List all workers\n"
+  printf "  pause <name>                                           Pause a worker\n"
+  printf "  resume <name>                                          Resume a paused worker\n"
+  printf "  rate-limit <name> [--duration <seconds>]               Rate-limit a worker\n"
+  printf "  test <name>                                            Test provider connectivity\n"
+  printf "  status <name>                                          Show detailed worker info\n"
   printf "  help                                                   Show this help\n"
   printf "\n"
   printf "%bAdd options:%b\n" "$BOLD" "$RESET"
   printf "  --oauth-token <token>         Claude OAuth token\n"
-  printf "  --service-account <path>      Gemini service account JSON\n"
+  printf "  --credentials <path>          Gemini OAuth credentials JSON\n"
   printf "\n"
   printf "%bExamples:%b\n" "$BOLD" "$RESET"
   printf "  genisys add my-claude --provider claude --oauth-token sk-ant-...\n"
-  printf "  genisys add my-gemini --provider gemini --service-account /path/sa.json\n"
+  printf "  genisys add my-gemini --provider gemini --credentials /path/oauth_creds.json\n"
   printf "  genisys add my-codex --provider codex\n"
   printf "  genisys list\n"
   printf "  genisys remove my-claude\n"
@@ -50,7 +55,7 @@ cmd_add() {
   while [ $# -gt 0 ]; do
     case "$1" in
       --provider) provider="$2"; shift 2 ;;
-      --oauth-token|--service-account) extra_args+=("$1" "$2"); shift 2 ;;
+      --oauth-token|--service-account|--credentials) extra_args+=("$1" "$2"); shift 2 ;;
       *) shift ;;
     esac
   done
@@ -84,11 +89,89 @@ cmd_list() {
   worker_list "${1:-table}"
 }
 
+# ── pause ─────────────────────────────────────────────────
+cmd_pause() {
+  local name="${1:-}"
+  [ -z "$name" ] && { fail "Usage: genisys pause <name>"; return 1; }
+  worker_pause "$name"
+}
+
+# ── resume ────────────────────────────────────────────────
+cmd_resume() {
+  local name="${1:-}"
+  [ -z "$name" ] && { fail "Usage: genisys resume <name>"; return 1; }
+  worker_resume "$name"
+}
+
+# ── rate-limit ────────────────────────────────────────────
+cmd_rate_limit() {
+  local name="${1:-}"
+  [ -z "$name" ] && { fail "Usage: genisys rate-limit <name> [--duration <seconds>]"; return 1; }
+  shift
+
+  local duration=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --duration) duration="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  worker_rate_limit "$name" "$duration"
+}
+
+# ── test ──────────────────────────────────────────────────
+cmd_test() {
+  local name="${1:-}"
+  if [ "$name" = "--all" ]; then
+    if ! is_initialized; then
+      fail "Worker system not initialized. Run: skynet init"
+      return 1
+    fi
+    worker_check_rate_limits
+    local workers
+    workers=$(worker_available_list)
+    if [ -z "$workers" ]; then
+      # Test all workers regardless of status
+      workers=$(_FILE="$SKYNET_WORKERS" python3 -c "
+import json, os
+with open(os.environ['_FILE']) as f:
+    d = json.load(f)
+for w in d['workers']:
+    print(w['name'])
+")
+    fi
+    local any_fail=0
+    while IFS= read -r w; do
+      worker_test "$w" || any_fail=1
+      printf "\n"
+    done <<< "$workers"
+    return $any_fail
+  fi
+
+  [ -z "$name" ] && { fail "Usage: genisys test <name> | genisys test --all"; return 1; }
+  worker_test "$name"
+}
+
+# ── status ────────────────────────────────────────────────
+cmd_status() {
+  local name="${1:-}"
+  [ -z "$name" ] && { fail "Usage: genisys status <name>"; return 1; }
+  printf "\n${BOLD}Worker: %s${RESET}\n" "$name"
+  worker_status "$name"
+  printf "\n"
+}
+
 # ── Main ──────────────────────────────────────────────────
 case "${1:-help}" in
-  add)    shift; cmd_add "$@" ;;
-  remove) shift; cmd_remove "$@" ;;
-  list)   shift 2>/dev/null || true; cmd_list "${1:-table}" ;;
+  add)        shift; cmd_add "$@" ;;
+  remove)     shift; cmd_remove "$@" ;;
+  list)       shift 2>/dev/null || true; cmd_list "${1:-table}" ;;
+  pause)      shift; cmd_pause "$@" ;;
+  resume)     shift; cmd_resume "$@" ;;
+  rate-limit) shift; cmd_rate_limit "$@" ;;
+  test)       shift; cmd_test "$@" ;;
+  status)     shift; cmd_status "$@" ;;
   help|--help|-h) usage ;;
   *)
     fail "Unknown command: $1"
