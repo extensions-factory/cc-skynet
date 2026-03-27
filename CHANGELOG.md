@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.3] - 2026-03-27
+
+### Fixed
+
+- **[C-2]** Replace `eval` command execution in `cmd_doctor` with safe array-based dispatch — prevents arbitrary code execution via `prerequisites.json`
+- **[C-3]** Eliminate shell variable interpolation in all 17 `python3 -c` calls across `sources.sh`, `common.sh`, and `bin/skynet` — pass values via `os.environ` to prevent injection
+- `_is_stale()` crash when `STATE_FILE` doesn't exist on cold start — added `os.path.exists()` guard
+- `import_sync` broken counter lost in pipe subshell — converted to process substitution
+
+### Changed
+
+- `json_read()` in `common.sh` now accepts dot-separated key paths instead of arbitrary Python expressions
+- `cmd_doctor` prerequisites check block uses env vars for Python interop
+
+### Removed
+
+- Dead `_now_ts()` function from `sources.sh` (was never called)
+
 ## [0.8.2] - 2026-03-27
 
 ### Changed

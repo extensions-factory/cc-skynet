@@ -31,14 +31,20 @@ detect_platform() {
 }
 
 # ── JSON helpers (python3) ──────────────────────────────
-# Read a key from a JSON file: json_read <file> <python_expr>
-# Example: json_read plugin.json "d['version']"
+# Read a key from a JSON file: json_read <file> <dot.separated.key>
+# Example: json_read plugin.json "version"
 json_read() {
-  local file="$1" expr="$2"
-  python3 -c "import json; d=json.load(open('$file')); print($expr)"
+  local file="$1" key="$2"
+  _FILE="$file" _KEY="$key" python3 -c "
+import json, os, functools, operator
+with open(os.environ['_FILE']) as f:
+    d = json.load(f)
+keys = os.environ['_KEY'].split('.')
+print(functools.reduce(operator.getitem, keys, d))
+"
 }
 
 # ── Version ─────────────────────────────────────────────
 plugin_version() {
-  json_read "$PLUGIN_DIR/.claude-plugin/plugin.json" "d['version']"
+  json_read "$PLUGIN_DIR/.claude-plugin/plugin.json" "version"
 }

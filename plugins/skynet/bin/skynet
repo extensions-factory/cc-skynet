@@ -51,9 +51,12 @@ cmd_doctor() {
   while IFS='|' read -r name command required description install_cmd; do
     total=$((total + 1))
 
-    if eval "$command" > /dev/null 2>&1; then
+    local -a cmd_arr
+    read -ra cmd_arr <<< "$command"
+
+    if "${cmd_arr[@]}" > /dev/null 2>&1; then
       local ver
-      ver=$(eval "$command" 2>&1 | head -1)
+      ver=$("${cmd_arr[@]}" 2>&1 | head -1)
       ok "$name — $ver"
       passed=$((passed + 1))
     else
@@ -71,13 +74,13 @@ cmd_doctor() {
         fi
       fi
     fi
-  done < <(python3 -c "
-import json, sys
+  done < <(_PREREQUISITES_FILE="$PREREQUISITES_FILE" _PLATFORM="$platform" python3 -c "
+import json, os, sys
 
-with open('$PREREQUISITES_FILE') as f:
+with open(os.environ['_PREREQUISITES_FILE']) as f:
     data = json.load(f)
 
-platform = '$platform'
+platform = os.environ['_PLATFORM']
 for p in data['prerequisites']:
     install_cmd = p.get('install', {}).get(platform, '')
     print(f\"{p['name']}|{p['command']}|{p.get('required', False)}|{p['description']}|{install_cmd}\")

@@ -21,13 +21,15 @@ _ensure_cache() {
 # Usage: _source_field <name> <field>
 _source_field() {
   local name="$1" field="$2"
-  python3 -c "
-import json, sys
-with open('$SOURCES_FILE') as f:
+  _NAME="$name" _FIELD="$field" _SOURCES_FILE="$SOURCES_FILE" python3 -c "
+import json, os, sys
+name = os.environ['_NAME']
+field = os.environ['_FIELD']
+with open(os.environ['_SOURCES_FILE']) as f:
     data = json.load(f)
 for s in data['sources']:
-    if s['name'] == '$name':
-        print(s.get('$field', ''))
+    if s['name'] == name:
+        print(s.get(field, ''))
         sys.exit(0)
 sys.exit(1)
 "
@@ -48,11 +50,6 @@ repo_dir() {
   echo "$REPOS_DIR/$(_repo_dirname "$repo_url")"
 }
 
-# Get current timestamp in ISO format
-_now_ts() {
-  python3 -c "from datetime import datetime,timezone; print(datetime.now(timezone.utc).isoformat())"
-}
-
 # Check if a source needs syncing (stale check)
 _is_stale() {
   local name="$1"
@@ -60,14 +57,21 @@ _is_stale() {
   interval_hours="$(_source_field "$name" "sync_interval_hours")"
   [ -z "$interval_hours" ] && interval_hours=24
 
-  python3 -c "
-import json, sys
+  _NAME="$name" _INTERVAL_HOURS="$interval_hours" _STATE_FILE="$STATE_FILE" python3 -c "
+import json, os, sys
 from datetime import datetime, timezone, timedelta
 
-with open('$STATE_FILE') as f:
+name = os.environ['_NAME']
+interval_hours = int(os.environ['_INTERVAL_HOURS'])
+
+state_path = os.environ['_STATE_FILE']
+if not os.path.exists(state_path):
+    sys.exit(0)  # Never synced = stale
+
+with open(state_path) as f:
     state = json.load(f)
 
-repo = state.get('repos', {}).get('$name', {})
+repo = state.get('repos', {}).get(name, {})
 last_sync = repo.get('last_sync', '')
 if not last_sync:
     sys.exit(0)  # Never synced = stale
@@ -76,7 +80,7 @@ last = datetime.fromisoformat(last_sync)
 if last.tzinfo is None:
     last = last.replace(tzinfo=timezone.utc)
 now = datetime.now(timezone.utc)
-if now - last > timedelta(hours=$interval_hours):
+if now - last > timedelta(hours=interval_hours):
     sys.exit(0)  # Stale
 sys.exit(1)  # Fresh
 "
@@ -88,20 +92,24 @@ _update_state() {
   local commit
   commit=$(git -C "$repo_path" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
-  python3 -c "
-import json
+  _NAME="$name" _COMMIT="$commit" _REPO_PATH="$repo_path" _STATE_FILE="$STATE_FILE" python3 -c "
+import json, os
 from datetime import datetime, timezone
 
-with open('$STATE_FILE') as f:
+name = os.environ['_NAME']
+commit = os.environ['_COMMIT']
+repo_path = os.environ['_REPO_PATH']
+
+with open(os.environ['_STATE_FILE']) as f:
     state = json.load(f)
 
-state.setdefault('repos', {})['$name'] = {
+state.setdefault('repos', {})[name] = {
     'last_sync': datetime.now(timezone.utc).isoformat(),
-    'commit': '$commit',
-    'path': '$repo_path'
+    'commit': commit,
+    'path': repo_path
 }
 
-with open('$STATE_FILE', 'w') as f:
+with open(os.environ['_STATE_FILE'], 'w') as f:
     json.dump(state, f, indent=2)
 "
 }
@@ -160,9 +168,9 @@ source_sync() {
   if [ "$target" = "--all" ] || [ -z "$target" ]; then
     # Sync all sources
     local names
-    names=$(python3 -c "
-import json
-with open('$SOURCES_FILE') as f:
+    names=$(_SOURCES_FILE="$SOURCES_FILE" python3 -c "
+import json, os
+with open(os.environ['_SOURCES_FILE']) as f:
     data = json.load(f)
 for s in data['sources']:
     print(s['name'])
@@ -208,21 +216,24 @@ source_add() {
     return 1
   fi
 
-  python3 -c "
-import json
+  _NAME="$name" _REPO_URL="$repo_url" _SOURCES_FILE="$SOURCES_FILE" python3 -c "
+import json, os
 
-with open('$SOURCES_FILE') as f:
+name = os.environ['_NAME']
+repo_url = os.environ['_REPO_URL']
+
+with open(os.environ['_SOURCES_FILE']) as f:
     data = json.load(f)
 
 data['sources'].append({
-    'name': '$name',
-    'repo': '$repo_url',
+    'name': name,
+    'repo': repo_url,
     'branch': 'main',
     'auto_sync': True,
     'sync_interval_hours': 24
 })
 
-with open('$SOURCES_FILE', 'w') as f:
+with open(os.environ['_SOURCES_FILE'], 'w') as f:
     json.dump(data, f, indent=2)
 "
   ok "Source '$name' added ($repo_url)"
@@ -231,15 +242,17 @@ with open('$SOURCES_FILE', 'w') as f:
 source_remove() {
   local name="$1"
 
-  python3 -c "
-import json
+  _NAME="$name" _SOURCES_FILE="$SOURCES_FILE" python3 -c "
+import json, os
 
-with open('$SOURCES_FILE') as f:
+name = os.environ['_NAME']
+
+with open(os.environ['_SOURCES_FILE']) as f:
     data = json.load(f)
 
-data['sources'] = [s for s in data['sources'] if s['name'] != '$name']
+data['sources'] = [s for s in data['sources'] if s['name'] != name]
 
-with open('$SOURCES_FILE', 'w') as f:
+with open(os.environ['_SOURCES_FILE'], 'w') as f:
     json.dump(data, f, indent=2)
 "
   ok "Source '$name' removed"
@@ -248,14 +261,14 @@ with open('$SOURCES_FILE', 'w') as f:
 source_list() {
   printf "\n${BOLD}Registered sources:${RESET}\n\n"
 
-  python3 -c "
+  _SOURCES_FILE="$SOURCES_FILE" _STATE_FILE="$STATE_FILE" python3 -c "
 import json, os
 
-with open('$SOURCES_FILE') as f:
+with open(os.environ['_SOURCES_FILE']) as f:
     data = json.load(f)
 
 state = {}
-state_file = '$STATE_FILE'
+state_file = os.environ['_STATE_FILE']
 if os.path.exists(state_file):
     with open(state_file) as f:
         state = json.load(f).get('repos', {})
@@ -293,9 +306,9 @@ _ensure_manifest() {
 _get_targets() {
   local manifest
   manifest="$(_manifest_file)"
-  python3 -c "
-import json
-with open('$manifest') as f:
+  _MANIFEST="$manifest" python3 -c "
+import json, os
+with open(os.environ['_MANIFEST']) as f:
     data = json.load(f)
 for t in data.get('targets', ['claude']):
     print(t)
@@ -335,24 +348,29 @@ import_link() {
   done < <(_get_targets)
 
   # Update manifest
-  python3 -c "
-import json
+  _MANIFEST_PATH="$(_manifest_file)" _SOURCE="$source" _TYPE="$type" _NAME="$name" _AS_NAME="$as_name" python3 -c "
+import json, os
 
-manifest_path = '$(_manifest_file)'
+manifest_path = os.environ['_MANIFEST_PATH']
+source = os.environ['_SOURCE']
+type_ = os.environ['_TYPE']
+name = os.environ['_NAME']
+as_name = os.environ['_AS_NAME']
+
 with open(manifest_path) as f:
     data = json.load(f)
 
 # Remove existing import with same as_name
 data['imports'] = [i for i in data['imports']
-                   if not (i.get('as', i['name']) == '$as_name' and i['type'] == '$type')]
+                   if not (i.get('as', i['name']) == as_name and i['type'] == type_)]
 
 entry = {
-    'source': '$source',
-    'type': '$type',
-    'name': '$name'
+    'source': source,
+    'type': type_,
+    'name': name
 }
-if '$as_name' != '$name':
-    entry['as'] = '$as_name'
+if as_name != name:
+    entry['as'] = as_name
 
 data['imports'].append(entry)
 
@@ -369,12 +387,13 @@ import_unlink() {
 
   # Find the import in manifest to get type
   local type
-  type=$(python3 -c "
-import json
-with open('$(_manifest_file)') as f:
+  type=$(_MANIFEST_PATH="$(_manifest_file)" _NAME="$name" python3 -c "
+import json, os
+name = os.environ['_NAME']
+with open(os.environ['_MANIFEST_PATH']) as f:
     data = json.load(f)
 for i in data['imports']:
-    if i.get('as', i['name']) == '$name':
+    if i.get('as', i['name']) == name:
         print(i['type'])
         break
 " 2>/dev/null)
@@ -395,14 +414,16 @@ for i in data['imports']:
   done < <(_get_targets)
 
   # Remove from manifest
-  python3 -c "
-import json
+  _MANIFEST_PATH="$(_manifest_file)" _NAME="$name" python3 -c "
+import json, os
 
-manifest_path = '$(_manifest_file)'
+manifest_path = os.environ['_MANIFEST_PATH']
+name = os.environ['_NAME']
+
 with open(manifest_path) as f:
     data = json.load(f)
 
-data['imports'] = [i for i in data['imports'] if i.get('as', i['name']) != '$name']
+data['imports'] = [i for i in data['imports'] if i.get('as', i['name']) != name]
 
 with open(manifest_path, 'w') as f:
     json.dump(data, f, indent=2)
@@ -422,16 +443,16 @@ import_sync() {
   info "Syncing imports from manifest..."
 
   local broken=0
-  python3 -c "
-import json
-with open('$manifest') as f:
+  while IFS='|' read -r source type name as_name; do
+    import_link "$source" "$type" "$name" "$as_name" || broken=$((broken + 1))
+  done < <(_MANIFEST="$manifest" python3 -c "
+import json, os
+with open(os.environ['_MANIFEST']) as f:
     data = json.load(f)
 for i in data['imports']:
     as_name = i.get('as', i['name'])
     print(f\"{i['source']}|{i['type']}|{i['name']}|{as_name}\")
-" | while IFS='|' read -r source type name as_name; do
-    import_link "$source" "$type" "$name" "$as_name" || broken=$((broken + 1))
-  done
+")
 
   if [ "$broken" -gt 0 ]; then
     warn "$broken imports had issues"
@@ -444,14 +465,16 @@ import_set_targets() {
   local targets="$1"
   _ensure_manifest
 
-  python3 -c "
-import json
+  _MANIFEST_PATH="$(_manifest_file)" _TARGETS="$targets" python3 -c "
+import json, os
 
-manifest_path = '$(_manifest_file)'
+manifest_path = os.environ['_MANIFEST_PATH']
+targets = os.environ['_TARGETS']
+
 with open(manifest_path) as f:
     data = json.load(f)
 
-data['targets'] = '$targets'.split(',')
+data['targets'] = targets.split(',')
 
 with open(manifest_path, 'w') as f:
     json.dump(data, f, indent=2)
@@ -465,9 +488,9 @@ import_list() {
   if [ -z "$source" ]; then
     # List from all sources
     local names
-    names=$(python3 -c "
-import json
-with open('$SOURCES_FILE') as f:
+    names=$(_SOURCES_FILE="$SOURCES_FILE" python3 -c "
+import json, os
+with open(os.environ['_SOURCES_FILE']) as f:
     data = json.load(f)
 for s in data['sources']:
     print(s['name'])
@@ -535,12 +558,12 @@ import_search() {
   fi
 
   # Fallback: scan directories (no index built yet)
-  python3 -c "
+  _QUERY="$query" _SOURCES_FILE="$SOURCES_FILE" _REPOS_DIR="$REPOS_DIR" python3 -c "
 import json, os, re, sys
 
-query = '$query'.lower()
-sources_file = '$SOURCES_FILE'
-repos_dir = '$REPOS_DIR'
+query = os.environ['_QUERY'].lower()
+sources_file = os.environ['_SOURCES_FILE']
+repos_dir = os.environ['_REPOS_DIR']
 
 with open(sources_file) as f:
     sources = json.load(f)['sources']
@@ -605,12 +628,12 @@ import_build_index() {
 
   info "Building skill index..."
 
-  python3 -c "
+  _SOURCES_FILE="$SOURCES_FILE" _REPOS_DIR="$REPOS_DIR" _INDEX_FILE="$index_file" python3 -c "
 import json, os, re
 
-sources_file = '$SOURCES_FILE'
-repos_dir = '$REPOS_DIR'
-index_file = '$index_file'
+sources_file = os.environ['_SOURCES_FILE']
+repos_dir = os.environ['_REPOS_DIR']
+index_file = os.environ['_INDEX_FILE']
 
 with open(sources_file) as f:
     sources = json.load(f)['sources']
