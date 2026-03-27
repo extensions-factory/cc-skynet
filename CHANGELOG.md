@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.7.1] - 2026-03-27
+
+### Changed
+
+- All hooks now output `<name> hooked` or `<name> failed to hook` status lines (SessionStart + UserPromptSubmit)
+- `greet.md` — presents boot status block to user on first response (template + example format)
+
 ## [0.7.0] - 2026-03-27
 
 ### Added
