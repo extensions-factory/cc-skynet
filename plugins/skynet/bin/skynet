@@ -13,6 +13,8 @@ PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 source "$PLUGIN_DIR/lib/common.sh"
 # shellcheck source=../lib/sources.sh
 source "$PLUGIN_DIR/lib/sources.sh"
+# shellcheck source=../lib/workers.sh
+source "$PLUGIN_DIR/lib/workers.sh"
 
 PREREQUISITES_FILE="$PLUGIN_DIR/prerequisites.json"
 
@@ -24,6 +26,7 @@ usage() {
   printf "\n"
   printf "%bCommands:%b\n" "$BOLD" "$RESET"
   printf "  doctor    Check prerequisites and system readiness\n"
+  printf "  init      Initialize worker system (~/.claude/skynet/)\n"
   printf "  source    Manage external skill/agent repositories\n"
   printf "  import    Import skills/agents into current project\n"
   printf "  unimport  Remove imported skills/agents\n"
@@ -213,8 +216,48 @@ cmd_unimport() {
   import_unlink "$name"
 }
 
+# ── init ──────────────────────────────────────────────────
+cmd_init() {
+  local reset="false"
+  [ "${1:-}" = "--reset" ] && reset="true"
+
+  printf "\n${BOLD}[SKYNET] Initializing worker system${RESET}\n\n"
+
+  if [ "$reset" = "true" ]; then
+    if [ -f "$SKYNET_CONFIG" ]; then
+      info "Resetting config to defaults..."
+      rm -f "$SKYNET_CONFIG"
+    fi
+  fi
+
+  # Create directory structure
+  ensure_skynet_home
+  ok "Directory: $SKYNET_HOME"
+
+  # Create config
+  if ensure_config; then
+    ok "Created: config.json (defaults)"
+  else
+    info "Config: config.json (already exists)"
+  fi
+
+  # Create workers registry
+  if ensure_workers_registry; then
+    ok "Created: workers.json (empty registry)"
+  else
+    info "Registry: workers.json (already exists)"
+  fi
+
+  printf "\n${GREEN}${BOLD}Worker system initialized.${RESET}\n"
+  printf "  Config:      %s\n" "$SKYNET_CONFIG"
+  printf "  Workers:     %s\n" "$SKYNET_WORKERS"
+  printf "  Credentials: %s\n" "$SKYNET_CREDENTIALS"
+  printf "\nNext: add a worker with ${BOLD}genisys add <name> --provider <claude|gemini|codex>${RESET}\n"
+}
+
 # ── Main ────────────────────────────────────────────────
 case "${1:-help}" in
+  init)     shift; cmd_init "$@" ;;
   doctor)   cmd_doctor ;;
   source)   shift; cmd_source "$@" ;;
   import)   shift; cmd_import "$@" ;;

@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.10.0] - 2026-03-27
+
+### Added
+
+- Worker system foundation — `lib/workers.sh` library with config management, directory setup, and atomic JSON operations
+- `skynet init` command — creates `~/.claude/skynet/` directory structure with `config.json`, `workers.json`, and `credentials/`
+- `skynet init --reset` flag to recreate config with defaults
+- Secure defaults: `chmod 0700` on directories, `chmod 0600` on config files
+
 ## [0.9.0] - 2026-03-27
 
 ### Added
