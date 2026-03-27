@@ -1,0 +1,18 @@
+{
+  "sources": [
+    {
+      "name": "antigravity",
+      "repo": "https://github.com/sickn33/antigravity-awesome-skills",
+      "branch": "main",
+      "auto_sync": true,
+      "sync_interval_hours": 24
+    },
+    {
+      "name": "everything",
+      "repo": "https://github.com/affaan-m/everything-claude-code",
+      "branch": "main",
+      "auto_sync": true,
+      "sync_interval_hours": 24
+    }
+  ]
+}

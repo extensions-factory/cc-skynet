@@ -11,6 +11,8 @@ PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 
 # shellcheck source=../lib/common.sh
 source "$PLUGIN_DIR/lib/common.sh"
+# shellcheck source=../lib/sources.sh
+source "$PLUGIN_DIR/lib/sources.sh"
 
 PREREQUISITES_FILE="$PLUGIN_DIR/prerequisites.json"
 
@@ -22,6 +24,9 @@ usage() {
   printf "\n"
   printf "%bCommands:%b\n" "$BOLD" "$RESET"
   printf "  doctor    Check prerequisites and system readiness\n"
+  printf "  source    Manage external skill/agent repositories\n"
+  printf "  import    Import skills/agents into current project\n"
+  printf "  unimport  Remove imported skills/agents\n"
   printf "  version   Show version\n"
   printf "  help      Show this help message\n"
 }
@@ -99,10 +104,119 @@ cmd_version() {
   printf "skynet %s\n" "$(plugin_version)"
 }
 
+# ── source ─────────────────────────────────────────────
+cmd_source() {
+  local subcmd="${1:-}"
+  shift 2>/dev/null || true
+
+  case "$subcmd" in
+    add)
+      local repo_url="${1:-}" name=""
+      [ -z "$repo_url" ] && { fail "Usage: skynet source add <repo-url> [--name <alias>]"; return 1; }
+      shift
+      while [ $# -gt 0 ]; do
+        case "$1" in
+          --name) name="$2"; shift 2 ;;
+          *) shift ;;
+        esac
+      done
+      source_add "$repo_url" "$name"
+      ;;
+    sync)
+      local target="${1:---all}" auto="false"
+      [ "$target" = "--auto" ] && { auto="true"; target="--all"; }
+      [ "${2:-}" = "--auto" ] && auto="true"
+      source_sync "$target" "$auto"
+      ;;
+    list)
+      source_list
+      ;;
+    remove)
+      local name="${1:-}"
+      [ -z "$name" ] && { fail "Usage: skynet source remove <name>"; return 1; }
+      source_remove "$name"
+      ;;
+    *)
+      printf "${BOLD}skynet source${RESET} — manage external repositories\n\n"
+      printf "  add <url> [--name <alias>]   Register a source\n"
+      printf "  sync [--all|<name>]          Clone or pull updates\n"
+      printf "  list                         Show registered sources\n"
+      printf "  remove <name>                Unregister a source\n"
+      ;;
+  esac
+}
+
+# ── import ─────────────────────────────────────────────
+cmd_import() {
+  local arg="${1:-}"
+
+  case "$arg" in
+    --list)
+      import_list "${2:-}"
+      ;;
+    --search)
+      [ -z "${2:-}" ] && { fail "Usage: skynet import --search <query>"; return 1; }
+      import_search "$2"
+      ;;
+    --sync)
+      import_sync
+      ;;
+    --index)
+      import_build_index
+      ;;
+    --targets)
+      [ -z "${2:-}" ] && { fail "Usage: skynet import --targets claude,gemini,codex"; return 1; }
+      import_set_targets "$2"
+      ;;
+    --help|"")
+      printf "${BOLD}skynet import${RESET} — import skills/agents into current project\n\n"
+      printf "  <source>:<name> [--as <n>] [--type skill|agent]   Import an item\n"
+      printf "  --list [<source>]                                  Browse available items\n"
+      printf "  --search <query>                                   Search across sources\n"
+      printf "  --index                                            Build compact skill index\n"
+      printf "  --sync                                             Re-create symlinks from manifest\n"
+      printf "  --targets claude,gemini,codex                      Set target tools\n"
+      ;;
+    *)
+      # Parse <source>:<name>
+      local source name as_name="" type="skill"
+      if [[ "$arg" == *":"* ]]; then
+        source="${arg%%:*}"
+        name="${arg#*:}"
+      else
+        fail "Usage: skynet import <source>:<name>"
+        return 1
+      fi
+
+      shift
+      while [ $# -gt 0 ]; do
+        case "$1" in
+          --as) as_name="$2"; shift 2 ;;
+          --type) type="$2"; shift 2 ;;
+          *) shift ;;
+        esac
+      done
+
+      [ -z "$as_name" ] && as_name="$name"
+      import_link "$source" "$type" "$name" "$as_name"
+      ;;
+  esac
+}
+
+# ── unimport ───────────────────────────────────────────
+cmd_unimport() {
+  local name="${1:-}"
+  [ -z "$name" ] && { fail "Usage: skynet unimport <name>"; return 1; }
+  import_unlink "$name"
+}
+
 # ── Main ────────────────────────────────────────────────
 case "${1:-help}" in
-  doctor)  cmd_doctor ;;
-  version) cmd_version ;;
+  doctor)   cmd_doctor ;;
+  source)   shift; cmd_source "$@" ;;
+  import)   shift; cmd_import "$@" ;;
+  unimport) shift; cmd_unimport "$@" ;;
+  version)  cmd_version ;;
   help|--help|-h) usage ;;
   *)
     fail "Unknown command: $1"

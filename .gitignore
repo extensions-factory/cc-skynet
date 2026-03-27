@@ -14,6 +14,10 @@ Thumbs.db
 # Local settings (not shared)
 .claude/settings.local.json
 
+# Symlinks (if any)
+.claude/skills/
+.claude/agents/
+
 # Node (if plugins use npm)
 node_modules/
 

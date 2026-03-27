@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.7.0] - 2026-03-27
+
+### Added
+
+- `skynet source` command — manage external skill/agent repositories (add, sync, list, remove)
+- `skynet import` command — import skills/agents into project via symlinks (search, link, list, index, sync, targets)
+- `skynet unimport` command — remove imported skills/agents
+- `lib/sources.sh` — source registry and import management library (660 lines)
+- `sources.json` — default external repos: antigravity, everything (1400+ skills/agents)
+- `auto-discover-skills` session rule — proactive skill discovery on SessionStart
+- `.skills-manifest.json` — declarative import tracking with multi-target support (claude, gemini, codex)
+- SessionStart hook: auto-sync sources on session start (with staleness check)
+- `git` added to prerequisites (required for source sync)
+
 ## [0.6.1] - 2026-03-26
 
 ### Added

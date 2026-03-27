@@ -31,6 +31,16 @@
       }
     },
     {
+      "name": "git",
+      "command": "git --version",
+      "required": true,
+      "description": "Git version control (used for source sync)",
+      "install": {
+        "darwin": "brew install git",
+        "linux": "sudo apt install git"
+      }
+    },
+    {
       "name": "claude",
       "command": "claude --version",
       "required": true,

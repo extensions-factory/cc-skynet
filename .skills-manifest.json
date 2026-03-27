@@ -1,0 +1,92 @@
+{
+  "targets": [
+    "claude"
+  ],
+  "imports": [
+    {
+      "source": "antigravity",
+      "type": "skill",
+      "name": "parallel-agents"
+    },
+    {
+      "source": "antigravity",
+      "type": "skill",
+      "name": "agent-orchestrator"
+    },
+    {
+      "source": "antigravity",
+      "type": "skill",
+      "name": "multi-agent-patterns"
+    },
+    {
+      "source": "everything",
+      "type": "skill",
+      "name": "agentic-engineering"
+    },
+    {
+      "source": "antigravity",
+      "type": "skill",
+      "name": "skill-writer"
+    },
+    {
+      "source": "antigravity",
+      "type": "skill",
+      "name": "skill-check"
+    },
+    {
+      "source": "antigravity",
+      "type": "skill",
+      "name": "skill-scanner"
+    },
+    {
+      "source": "antigravity",
+      "type": "skill",
+      "name": "bash-scripting"
+    },
+    {
+      "source": "antigravity",
+      "type": "skill",
+      "name": "shellcheck-configuration"
+    },
+    {
+      "source": "antigravity",
+      "type": "skill",
+      "name": "code-reviewer"
+    },
+    {
+      "source": "everything",
+      "type": "skill",
+      "name": "security-review"
+    },
+    {
+      "source": "everything",
+      "type": "skill",
+      "name": "agent-harness-construction"
+    },
+    {
+      "source": "everything",
+      "type": "agent",
+      "name": "architect.md"
+    },
+    {
+      "source": "everything",
+      "type": "agent",
+      "name": "code-reviewer.md"
+    },
+    {
+      "source": "everything",
+      "type": "agent",
+      "name": "security-reviewer.md"
+    },
+    {
+      "source": "everything",
+      "type": "agent",
+      "name": "planner.md"
+    },
+    {
+      "source": "everything",
+      "type": "agent",
+      "name": "harness-optimizer.md"
+    }
+  ]
+}

@@ -15,6 +15,14 @@
           {
             "type": "command",
             "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && EXPECTED=\"$PLUGIN_DIR/bin/skynet\" && CURRENT=$(readlink ~/.local/bin/skynet 2>/dev/null || echo '') && if [ \"$CURRENT\" != \"$EXPECTED\" ]; then bash \"$PLUGIN_DIR/bin/setup.sh\" 2>&1; fi"
+          },
+          {
+            "type": "command",
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && export PLUGIN_DIR && bash -c 'source \"$PLUGIN_DIR/lib/sources.sh\" && source_sync \"--all\" \"true\"' 2>&1 || true"
+          },
+          {
+            "type": "command",
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:SessionStart/,/@end:SessionStart/' \"$PLUGIN_DIR/rules/session/auto-discover-skills.md\" | grep -v '@hook:\\|@end:'"
           }
         ]
       }
