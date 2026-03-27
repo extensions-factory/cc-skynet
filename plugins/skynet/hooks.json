@@ -36,6 +36,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/session/use-skills.md\" | grep -v '@hook:\\|@end:' && echo 'use-skills hooked' || echo 'use-skills failed to hook'"
+          },
+          {
+            "type": "command",
             "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/core/user-priority.md\" | grep -v '@hook:\\|@end:' && echo 'user-priority hooked' || echo 'user-priority failed to hook'"
           },
           {

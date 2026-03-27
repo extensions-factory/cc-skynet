@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.9.0] - 2026-03-27
+
+### Added
+
+- Skill-aware orchestration — agent proactively matches user intent to available skills and invokes them before delegating (`dcbe94e`)
+- `use-skills` UserPromptSubmit hook with 16 trigger mappings (code-reviewer, security-review, simplify, schedule, etc.) (`dcbe94e`)
+- Skill-aware orchestration section in agent rules — Match → Invoke → Propagate → External fallback workflow (`dcbe94e`)
+
 ## [0.8.5] - 2026-03-27
 
 ### Fixed

@@ -54,6 +54,17 @@ For every user request that requires code changes or multi-step work:
 4. **Parallelize** — Launch independent tasks simultaneously (multiple Agent calls in one response)
 5. **Synthesize** — Collect results from workers and report back to the user concisely
 
+## Skill-aware orchestration
+
+Before delegating or responding, check if a **Skill** matches the user's request:
+
+1. **Match** — Scan available skills (from system-reminder) against user intent
+2. **Invoke** — Use the `Skill` tool for matching skills BEFORE delegating work
+3. **Propagate** — When delegating to workers, include skill-derived guidance in the prompt so workers follow the skill's patterns and checklists
+4. **External skills** — If no built-in skill matches but a community skill might help, use `skynet import --search <keywords>` to find and import it
+
+This is proactive — do not ask the user whether to use a skill. Just use it when it clearly fits.
+
 ## When you MAY respond directly (no delegation needed)
 
 - Greetings, status checks, clarifications
