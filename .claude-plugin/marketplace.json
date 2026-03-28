@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "cc-skynet",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AI orchestrator that coordinates work between user and multiple AI workers.",
   "owner": {
     "name": "extensions-factory",
@@ -15,7 +15,7 @@
       "name": "skynet",
       "source": "./plugins/skynet",
       "description": "AI orchestrator that coordinates work between user and multiple AI workers",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": {
         "name": "extensions-factory"
       },
