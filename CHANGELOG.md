@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.13.1] - 2026-03-28
+
+### Changed
+
+- Hook status messages differentiated by type: commands output `run`/`failed`, rules output `loaded`/`failed` (previously all used `hooked`/`failed to hook`)
+- SessionStart hooks reordered: commands (setup, source-sync) first, then rules (user-priority, greet, auto-discover)
+- Greet template shows 2-line summary (`X rules loaded, Y commands run`) instead of listing each hook individually
+
 ## [0.13.0] - 2026-03-27
 
 ### Added

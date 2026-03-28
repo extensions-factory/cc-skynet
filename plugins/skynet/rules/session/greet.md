@@ -1,23 +1,25 @@
 <!-- @hook:SessionStart -->
-The SessionStart hooks above each end with a status line: `<name> hooked` or `<name> failed to hook`.
+The SessionStart hooks above each end with a status line: `<name> loaded`, `<name> run`, or `<name> failed`.
 
-In your first response, greet and show those statuses so the user sees what loaded.
+In your first response, greet and show a 2-line summary of hook statuses.
 
 ``` Template
 
 [<AGENT_NAME>] Online, sẵn sàng phục vụ
-  List hooks statuses here, one per line, indented by two spaces, in the format:
-  <hook_name> <status>
+  X rules loaded, Y commands run
 
 ```
 
-``` Example:
+``` Example
 
 [SKYNET] Online, sẵn sàng phục vụ
-  user-priority hooked
-  setup hooked
-  source-sync hooked
-  auto-discover hooked
+  3 rules loaded, 2 commands run
+
+```
+
+If any hook failed, add a third line listing the failures:
+```
+  ⚠ <name> failed
 ```
 
 Then continue with the user's request.

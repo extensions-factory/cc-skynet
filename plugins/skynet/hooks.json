@@ -6,23 +6,23 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:SessionStart/,/@end:SessionStart/' \"$PLUGIN_DIR/rules/core/user-priority.md\" | grep -v '@hook:\\|@end:' && echo 'user-priority hooked' || echo 'user-priority failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && STALE=0 && for cli in skynet genisys legion; do [ -f \"$PLUGIN_DIR/bin/$cli\" ] && { EXPECTED=\"$PLUGIN_DIR/bin/$cli\" && CURRENT=$(readlink \"$HOME/.local/bin/$cli\" 2>/dev/null || echo '') && [ \"$CURRENT\" = \"$EXPECTED\" ] || STALE=1; }; done && if [ \"$STALE\" -eq 1 ]; then bash \"$PLUGIN_DIR/bin/setup.sh\" >/dev/null 2>&1 && echo 'setup run' || echo 'setup failed'; else echo 'setup run'; fi"
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:SessionStart/,/@end:SessionStart/' \"$PLUGIN_DIR/rules/session/greet.md\" | grep -v '@hook:\\|@end:' && echo 'greet hooked' || echo 'greet failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && export PLUGIN_DIR && bash -c 'source \"$PLUGIN_DIR/lib/sources.sh\" && source_sync \"--all\" \"true\"' >/dev/null 2>&1 && echo 'source-sync run' || echo 'source-sync failed'"
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && STALE=0 && for cli in skynet genisys legion; do [ -f \"$PLUGIN_DIR/bin/$cli\" ] && { EXPECTED=\"$PLUGIN_DIR/bin/$cli\" && CURRENT=$(readlink \"$HOME/.local/bin/$cli\" 2>/dev/null || echo '') && [ \"$CURRENT\" = \"$EXPECTED\" ] || STALE=1; }; done && if [ \"$STALE\" -eq 1 ]; then bash \"$PLUGIN_DIR/bin/setup.sh\" >/dev/null 2>&1 && echo 'setup hooked' || echo 'setup failed to hook'; else echo 'setup hooked'; fi"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:SessionStart/,/@end:SessionStart/' \"$PLUGIN_DIR/rules/core/user-priority.md\" | grep -v '@hook:\\|@end:' && echo 'user-priority loaded' || echo 'user-priority failed'"
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && export PLUGIN_DIR && bash -c 'source \"$PLUGIN_DIR/lib/sources.sh\" && source_sync \"--all\" \"true\"' >/dev/null 2>&1 && echo 'source-sync hooked' || echo 'source-sync failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:SessionStart/,/@end:SessionStart/' \"$PLUGIN_DIR/rules/session/greet.md\" | grep -v '@hook:\\|@end:' && echo 'greet loaded' || echo 'greet failed'"
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:SessionStart/,/@end:SessionStart/' \"$PLUGIN_DIR/rules/session/auto-discover-skills.md\" | grep -v '@hook:\\|@end:' && echo 'auto-discover hooked' || echo 'auto-discover failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:SessionStart/,/@end:SessionStart/' \"$PLUGIN_DIR/rules/session/auto-discover-skills.md\" | grep -v '@hook:\\|@end:' && echo 'auto-discover loaded' || echo 'auto-discover failed'"
           }
         ]
       }
@@ -36,31 +36,31 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/session/use-skills.md\" | grep -v '@hook:\\|@end:' && echo 'use-skills hooked' || echo 'use-skills failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/session/use-skills.md\" | grep -v '@hook:\\|@end:' && echo 'use-skills loaded' || echo 'use-skills failed'"
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/core/user-priority.md\" | grep -v '@hook:\\|@end:' && echo 'user-priority hooked' || echo 'user-priority failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/core/user-priority.md\" | grep -v '@hook:\\|@end:' && echo 'user-priority loaded' || echo 'user-priority failed'"
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/versioning/auto-bump-before-commit.md\" | grep -v '@hook:\\|@end:' && echo 'auto-bump hooked' || echo 'auto-bump failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/versioning/auto-bump-before-commit.md\" | grep -v '@hook:\\|@end:' && echo 'auto-bump loaded' || echo 'auto-bump failed'"
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/output/footer-usage.md\" | grep -v '@hook:\\|@end:' && echo 'footer-usage hooked' || echo 'footer-usage failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/output/footer-usage.md\" | grep -v '@hook:\\|@end:' && echo 'footer-usage loaded' || echo 'footer-usage failed'"
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/versioning/suffix-bump.md\" | grep -v '@hook:\\|@end:' && echo 'suffix-bump hooked' || echo 'suffix-bump failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/versioning/suffix-bump.md\" | grep -v '@hook:\\|@end:' && echo 'suffix-bump loaded' || echo 'suffix-bump failed'"
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/versioning/changelog-before-commit.md\" | grep -v '@hook:\\|@end:' && echo 'changelog hooked' || echo 'changelog failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/versioning/changelog-before-commit.md\" | grep -v '@hook:\\|@end:' && echo 'changelog loaded' || echo 'changelog failed'"
           },
           {
             "type": "command",
-            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/versioning/sync-prerequisites.md\" | grep -v '@hook:\\|@end:' && echo 'sync-prerequisites hooked' || echo 'sync-prerequisites failed to hook'"
+            "command": "PLUGIN_DIR=$(python3 -c \"import json,os; d=json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json'))); print(d['plugins']['skynet@cc-skynet'][0]['installPath'])\") && awk '/@hook:UserPromptSubmit/,/@end:UserPromptSubmit/' \"$PLUGIN_DIR/rules/versioning/sync-prerequisites.md\" | grep -v '@hook:\\|@end:' && echo 'sync-prerequisites loaded' || echo 'sync-prerequisites failed'"
           }
         ]
       }
