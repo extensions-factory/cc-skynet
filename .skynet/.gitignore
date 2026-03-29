@@ -1,0 +1,7 @@
+# Skynet local state — do not commit
+local/
+*.log
+
+# Keep project config tracked
+!project.json
+!.gitignore
