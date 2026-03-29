@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.3.0] - 2026-03-29
+
+### Added
+
+- One-command install script (`scripts/install.sh`)
+- `check-version` skill for post-install verification
+- Install troubleshooting guide (`docs/guides/install-guide.md`)
+
 ## [0.2.0] - 2026-03-28
 
 ### Added

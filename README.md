@@ -1,12 +1,20 @@
 # Skynet — Claude Code Plugin Marketplace
 
-**Version 0.2.0** | **License MIT**
+**Version 0.3.0** | **License MIT**
 
 AI orchestrator that coordinates work between user and multiple AI workers.
 
 Skynet is a Claude Code plugin that turns Claude into an orchestrator agent (codename SKYNET). The orchestrator never executes code directly -- it analyzes your request, decomposes it into discrete tasks, delegates each task to specialized worker agents, parallelizes independent work, and synthesizes the results back to you.
 
 ## Installation
+
+### Quick Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/extensions-factory/cc-skynet/main/scripts/install.sh | sh
+```
+
+### Advanced / Manual Install
 
 1. Add the marketplace:
 
@@ -26,7 +34,17 @@ claude plugins install skynet@cc-skynet
 claude --dangerously-skip-permissions "start session"
 ```
 
-4. Verify the boot message. You should see:
+See the [full install guide](docs/guides/install-guide.md) for prerequisites, troubleshooting, and uninstall instructions.
+
+## Verify Installation
+
+Run the `check-version` skill inside a Skynet session:
+
+```
+/skynet:check-version
+```
+
+You should see the boot message and version confirmation:
 
 ```
 [SKYNET] Online
@@ -34,7 +52,7 @@ claude --dangerously-skip-permissions "start session"
 
 ## Update
 
-``` bash
+```bash
 claude plugin update skynet@cc-skynet
 ```
 

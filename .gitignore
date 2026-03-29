@@ -19,3 +19,12 @@ node_modules/
 
 # Templates
 plugins/plugin-template/
+
+# Symlinks
+.claude/agents/
+.claude/skills/
+.codex/agents/
+.codex/skills/
+
+# Local data
+tasks/
