@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "createdAt": "2026-03-29T08:15:00Z",
+  "updatedAt": "2026-03-29T08:15:00Z",
+  "project": {
+    "type": "cli",
+    "description": "Skynet is a Claude Code plugin that turns Claude into an orchestrator agent (codename SKYNET). The orchestrator never executes code directly -- it analyzes your request, decomposes it into discrete tasks, delegates each task to specialized worker agents, parallelizes independent work, and synthesizes the results back to you.",
+    "teamMode": "solo"
+  },
+  "workflow": {
+    "rigor": "standard",
+    "description": "Basic review and testing gates"
+  },
+  "roles": {
+    "PM":  { "coverage": "ai" },
+    "PO":  { "coverage": "human" },
+    "BA":  { "coverage": "ai" },
+    "SA":  { "coverage": "ai" },
+    "Dev": { "coverage": "ai" },
+    "QA":  { "coverage": "ai" }
+  },
+  "providers": {
+    "primary": "Claude",
+    "notes": "Claude, Gemini, Codex — all subscription accounts"
+  }
+}

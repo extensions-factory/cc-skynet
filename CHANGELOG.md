@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.5.0] - 2026-03-29
+
+### Added
+
+- `setup-profile` skill — guided project operating profile creation
+- `show-profile` skill — display current project profile
+- Profile schema documentation (`docs/architecture/profile-schema.md`)
+- `detect-project` now shows profile configuration status
+
 ## [0.4.0] - 2026-03-29
 
 ### Added

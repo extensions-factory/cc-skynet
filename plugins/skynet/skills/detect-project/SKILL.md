@@ -55,6 +55,18 @@ Location:    {cwd}/.skynet/
 
 Where each `{field}` is read from the parsed `project.json`.
 
+### Step 4 — Show profile status
+
+1. Check if `.skynet/profile.json` exists in the current working directory.
+2. If the file exists, append to the output:
+   ```
+   Profile:     Configured (use `show-profile` to view)
+   ```
+3. If the file does NOT exist, append to the output:
+   ```
+   Profile:     Not configured (use `setup-profile` to create)
+   ```
+
 ## Notes
 
 - This skill is read-only — it never modifies project configuration.
