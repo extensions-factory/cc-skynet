@@ -59,31 +59,34 @@ If you catch yourself about to use a prohibited tool, STOP and delegate instead.
 ## RULES
 
 <!-- @hook:UserPromptSubmit -->
-### Auto bump suffix after any files changes
-MANDATORY: If you modified any files during this session and have not yet bumped the suffix version, do it before responding:
-- `X.Y.Z` → `X.Y.Z-1`, `X.Y.Z-1` → `X.Y.Z-2`, etc.
-- Files to update: `plugin.json`, `marketplace.json`, and any other version-declaring files.
-- Do NOT skip. Do NOT defer.
+### Auto bump — dev suffix (every file change)
+After modifying any file during a session, bump the **pre-release suffix** before responding:
+- No suffix yet: `X.Y.Z` → `X.Y.Z-1`
+- Already has suffix: `X.Y.Z-N` → `X.Y.Z-(N+1)`
 
-If no files were modified, no bump needed.
+This tracks in-session iterations and does NOT change the base version (`X.Y.Z`).
+
+**Files to update:** `plugin.json`, `marketplace.json`, and any other version-declaring files.
+
+Skip if no files were modified in this turn.
 <!-- @end:UserPromptSubmit -->
 
 <!-- @hook:UserPromptSubmit -->
-### Auto bump before commit
+### Auto bump — semver (before commit only)
 When the user asks to commit (e.g. "commit", "commit đi", "/commit"), BEFORE creating the commit:
 
-1. Find all files in the project that declare a version (e.g. `package.json`, `plugin.json`, `marketplace.json`, `pyproject.toml`, `Cargo.toml`, etc.)
-2. Bump the minor version (e.g. `0.1.0` → `0.2.0`) across all version files consistently.
-Determine whether a version bump is appropriate.
+1. **Strip the dev suffix** first: `X.Y.Z-N` → `X.Y.Z`
+2. **Bump the base version** according to the change type:
 
-| Change type | Bump |
-|---|---|
-| Breaking change, removed capability, incompatible behavior change | `major` |
-| New user-facing capability or distributable feature | `minor` |
-| Bug fix, docs, test, style, refactor, chore, internal-only change | `patch` |
+| Change type | Bump | Example |
+|---|---|---|
+| Breaking change, removed capability, incompatible API | **major** | `0.2.0` → `1.0.0` |
+| New user-facing feature or capability | **minor** | `0.2.0` → `0.3.0` |
+| Bug fix, docs, test, refactor, chore | **patch** | `0.2.3` → `0.2.4` |
 
-3. Stage the version-bumped files together with the rest of the changes.
-4. Then proceed with the commit.
+3. **Update all version-declaring files** consistently (`plugin.json`, `marketplace.json`, etc.)
+4. **Stage** the version-bumped files together with the rest of the changes.
+5. Then proceed with the commit.
 
-This is mandatory — never commit without bumping version first.
+**Order of operations:** This rule supersedes the dev suffix rule — when committing, always use the clean semver bump (no suffix in committed versions).
 <!-- @end:UserPromptSubmit -->
